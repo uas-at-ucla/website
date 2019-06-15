@@ -6,15 +6,8 @@ html
     meta(name='viewport', content='user-scalable=yes, width=device-width, initial-scale=1, maximum-scale=5')
     meta(name='theme-color', content='#333333')
     meta(name='msapplication-TileColor', content='#333333')
-    meta(name='msapplication-TileImage', content='/favicons/ms-icon-144x144.png')
     title Wiki.js Setup
     
-    //- Favicon
-    each favsize in [57, 60, 72, 76, 114, 120, 144, 152, 180]
-      link(rel='apple-touch-icon', sizes=favsize + 'x' + favsize, href='/favicons/apple-icon-' + favsize + 'x' + favsize + '.png')
-    link(rel='icon', type='image/png', sizes='192x192', href='/favicons/android-icon-192x192.png')
-    each favsize in [32, 96, 16]
-      link(rel='icon', type='image/png', sizes=favsize + 'x' + favsize, href='/favicons/favicon-' + favsize + 'x' + favsize + '.png')
     link(rel='manifest', href='/manifest.json')
     
     //- Site Lang
@@ -23,34 +16,20 @@ html
     
     //- CSS
 
-
-    link(
-      type='text/css'
-      rel='stylesheet'
-      href='/css/setup.ac4d6fe10984a5a466f9.css'
-      integrity='sha256-36WhXiOwmHn0Lt9kwGCwy+xb3eiOPGa4mBAJU5lVV1s= sha512-ymIV716zMR+nmbBGWeFjXnBkH/GEQoL07Sup4ISvVDVf59PE3aiJmQaFfBnVH2itb+T96SCo81WQ/pYYftwNdw=='
-      crossorigin='use-credentials'
-    )
-
-
     
     //- JS
 
 
     script(
       type='text/javascript'
-      src='/js/runtime.cab6eb97e6021cc41e63.js'
-      integrity='sha256-WSEEFnBmV7G9LyxN2BLMMnRIXW4o618rqymB4uPgg2w= sha512-i2sfUVbKO6pwdojYU1pZIz7e06RL+YCDpK+eqnhAYhrih+T9ZI5log/D32Qcxj0pYSNWbiPTJDXGFOYGMAzhHA=='
-      crossorigin='use-credentials'
+      src='/js/runtime.js'
       )
 
 
 
     script(
       type='text/javascript'
-      src='/js/setup.ac4d6fe10984a5a466f9.js'
-      integrity='sha256-YIAH9XWLVarit/GW16LrqNva/h4Y3egTGCcUrf3yIkI= sha512-FD4HE2/ztFppsCxOzlMVO/2lSB+QzBUfH8nRF5Pzu9ukBAc2JIKehhpxFU0ZsL+u9eiMuojzNPb46Q5E++gEpg=='
-      crossorigin='use-credentials'
+      src='/js/setup.js'
       )
 
 

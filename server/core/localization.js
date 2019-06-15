@@ -6,6 +6,9 @@ const Promise = require('bluebird')
 const fs = require('fs-extra')
 const path = require('path')
 const yaml = require('js-yaml')
+const { promisify } = require('util')
+
+const readFileAsync = promisify(fs.readFile)
 
 /* global WIKI */
 
@@ -76,21 +79,23 @@ module.exports = {
     }
 
     // -> Load dev locale files if present
-    if (WIKI.IS_DEBUG) {
+//  if (WIKI.IS_DEBUG) {
       try {
-        const devEntriesRaw = await fs.readFileAsync(path.join(WIKI.SERVERPATH, `locales/${locale}.yml`), 'utf8')
+        const devEntriesRaw = await readFileAsync(path.join(WIKI.SERVERPATH, `locales/${locale}.yml`), 'utf8')
         if (devEntriesRaw) {
           const devEntries = yaml.safeLoad(devEntriesRaw)
           _.forOwn(devEntries, (data, ns) => {
             this.namespaces.push(ns)
             this.engine.addResourceBundle(locale, ns, data, true, true)
+            WIKI.logger.info(`Loaded dev locale: ${JSON.stringify(data)}`)
           })
           WIKI.logger.info(`Loaded dev locales from ${locale}.yml`)
         }
       } catch (err) {
+	throw new Error(err)
         // ignore
       }
-    }
+//  }
   },
   /**
    * Reload all namespaces for all active locales from the DB

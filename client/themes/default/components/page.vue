@@ -60,10 +60,6 @@
 
         v-flex(lg3, xl2, fill-height, v-if='$vuetify.breakpoint.lgAndUp')
           v-toolbar(:color='darkMode ? `grey darken-4-l3` : `grey lighten-4`', flat, :height='90')
-            div
-              .caption.grey--text.text--lighten-1 {{$t('common:page.lastEditedBy')}}
-              .body-2.grey--text(:class='darkMode ? `` : `text--darken-3`') {{ authorName }}
-              .caption.grey--text.text--darken-1 {{ updatedAt | moment('calendar') }}
             v-spacer
             v-tooltip(left)
               v-btn.btn-animate-edit(icon, slot='activator', :href='"/e/" + path')
@@ -105,18 +101,6 @@
                   v-list-tile-title {{tag.title}}
                 v-divider(inset, v-if='idx < tags.length - 1')
             v-divider
-          v-toolbar(:color='darkMode ? `grey darken-3` : `grey lighten-4`', flat, dense)
-            v-spacer
-            v-tooltip(bottom)
-              v-btn(icon, slot='activator'): v-icon(color='grey') bookmark
-              span {{$t('common:page.bookmark')}}
-            v-tooltip(bottom)
-              v-btn(icon, slot='activator'): v-icon(color='grey') share
-              span {{$t('common:page.share')}}
-            v-tooltip(bottom)
-              v-btn(icon, slot='activator'): v-icon(color='grey') print
-              span {{$t('common:page.printFormat')}}
-            v-spacer
     nav-footer
     notify
     search-results
