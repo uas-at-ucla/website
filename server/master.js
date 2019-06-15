@@ -6,7 +6,6 @@ const cors = require('cors')
 const express = require('express')
 const session = require('express-session')
 const KnexSessionStore = require('connect-session-knex')(session)
-const favicon = require('serve-favicon')
 const fs = require('fs-extra')
 const http = require('http')
 const https = require('https')
@@ -56,7 +55,7 @@ module.exports = async () => {
   // Public Assets
   // ----------------------------------------
 
-  app.use(favicon(path.join(WIKI.ROOTPATH, 'assets', 'favicon.ico')))
+  app.use(express.static(path.join(WIKI.ROOTPATH, 'client', 'static', 'favicon.ico')))
   app.use(express.static(path.join(WIKI.ROOTPATH, 'assets'), {
     index: false,
     maxAge: '7d'

@@ -3,7 +3,6 @@ const uuid = require('uuid/v4')
 const bodyParser = require('body-parser')
 const compression = require('compression')
 const express = require('express')
-const favicon = require('serve-favicon')
 const http = require('http')
 const https = require('https')
 const Promise = require('bluebird')
@@ -35,7 +34,7 @@ module.exports = () => {
   // Public Assets
   // ----------------------------------------
 
-  app.use(favicon(path.join(WIKI.ROOTPATH, 'assets', 'favicon.ico')))
+  app.use(express.static(path.join(WIKI.ROOTPATH, 'client', 'static', 'favicon.ico')))
   app.use(express.static(path.join(WIKI.ROOTPATH, 'assets')))
 
   // ----------------------------------------

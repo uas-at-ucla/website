@@ -96,7 +96,6 @@ reservedPaths:
   - logout
   - register
   - verify
-  - favicons
   - fonts
   - img
   - js
