@@ -36,6 +36,7 @@
   "dependencies": {
     "@aoberoi/passport-slack": "1.0.5",
     "@bugsnag/js": "6.3.0",
+    "acorn-dynamic-import": "4.0.0",
     "algoliasearch": "3.33.0",
     "apollo-fetch": "0.7.0",
     "apollo-server": "2.6.1",
@@ -283,7 +284,7 @@
     "vuex": "3.1.1",
     "vuex-pathify": "1.2.2",
     "vuex-persistedstate": "2.5.4",
-    "webpack": "4.32.2",
+    "webpack": "4.28.4",
     "webpack-bundle-analyzer": "3.3.2",
     "webpack-cli": "3.3.2",
     "webpack-dev-middleware": "3.7.0",
