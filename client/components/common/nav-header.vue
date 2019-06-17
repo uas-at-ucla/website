@@ -1,11 +1,11 @@
 <template lang='pug'>
-  v-toolbar.nav-header(color='black', dark, app, clipped-left, fixed, flat, :extended='searchIsShown && $vuetify.breakpoint.smAndDown')
-    v-toolbar(color='deep-purple', flat, slot='extension', v-if='searchIsShown && $vuetify.breakpoint.smAndDown')
+  v-toolbar.nav-header(color='#222', dark, app, clipped-left, fixed, flat, :extended='searchIsShown && $vuetify.breakpoint.smAndDown')
+    v-toolbar(color='#333', flat, slot='extension', v-if='searchIsShown')
       v-text-field(
         ref='searchFieldMobile'
         v-model='search'
         clearable
-        background-color='deep-purple'
+        background-color='#333'
         color='white'
         label='Search...'
         single-line
@@ -18,46 +18,21 @@
       )
     v-layout(row)
       v-flex(xs6, :md4='searchIsShown', :md6='!searchIsShown')
-        v-toolbar.nav-header-inner(color='black', dark, flat)
-          v-toolbar-title(:class='{ "ml-2": $vuetify.breakpoint.mdAndUp, "ml-0": $vuetify.breakpoint.smAndDown }')
-            span.subheading {{title}}
+        v-toolbar.nav-header-inner(color='#222', dark, flat)
+          a(href='/')
+              v-img(src="/img/uas_logo.png", height="80%", width="300px")
       v-flex(md4, v-if='$vuetify.breakpoint.mdAndUp')
-        v-toolbar.nav-header-inner(color='black', dark, flat)
+        v-toolbar.nav-header-inner(color='#222', dark, flat)
           slot(name='mid')
             transition(name='navHeaderSearch', v-if='searchIsShown')
-              v-text-field(
-                ref='searchField',
-                v-if='searchIsShown && $vuetify.breakpoint.mdAndUp',
-                v-model='search',
-                color='white',
-                :label='$t(`common:header.search`)',
-                single-line,
-                solo
-                flat
-                hide-details,
-                prepend-inner-icon='search',
-                :loading='searchIsLoading',
-                @keyup.enter='searchEnter'
-                @keyup.esc='searchClose'
-                @focus='searchFocus'
-                @blur='searchBlur'
-                @keyup.down='searchMove(`down`)'
-                @keyup.up='searchMove(`up`)'
-              )
-                v-progress-linear(
-                  indeterminate,
-                  slot='progress',
-                  height='2',
-                  color='blue'
-                )
       v-flex(xs6, :md4='searchIsShown', :md6='!searchIsShown')
-        v-toolbar.nav-header-inner(color='black', dark, flat)
+        v-toolbar.nav-header-inner(color='#222', dark, flat)
           v-spacer
           .navHeaderLoading.mr-3
             v-progress-circular(indeterminate, color='blue', :size='22', :width='2' v-show='isLoading')
           slot(name='actions')
           v-btn(
-            v-if='!hideSearch && $vuetify.breakpoint.smAndDown'
+            v-if='!hideSearch'
             @click='searchToggle'
             icon
             )
@@ -213,7 +188,7 @@ export default {
     }
   },
   created() {
-    if (this.hideSearch || this.dense || this.$vuetify.breakpoint.smAndDown) {
+    if (this.hideSearch || this.dense || true) {
       this.searchIsShown = false
     }
   },
