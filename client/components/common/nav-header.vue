@@ -17,15 +17,34 @@
         @keyup.enter='searchEnter'
       )
     v-layout(row)
-      v-flex(xs6, :md4='searchIsShown', :md6='!searchIsShown')
+      //- v-flex(xs6, :md3='!$vuetify.breakpoint.smAndDown', :md5='$vuetify.breakpoint.smAndDown')
+      v-flex(xs8, md11)
         v-toolbar.nav-header-inner(color='#111', dark, flat)
           a(href='/')
-              v-img(src="/img/uas_logo.png", height="80%", width="300px")
-      v-flex(md4, v-if='$vuetify.breakpoint.mdAndUp')
-        v-toolbar.nav-header-inner(color='#111', dark, flat)
-          slot(name='mid')
-            transition(name='navHeaderSearch', v-if='searchIsShown')
-      v-flex(xs6, :md4='searchIsShown', :md6='!searchIsShown')
+            v-img(src="/img/uas_logo.png", height="80%", width="300px")
+          template(v-if="$vuetify.breakpoint.smAndDown")
+            v-btn(@click='goToLink("/sponsors")', flat, icon)
+              v-icon(color='grey') attach_money
+            v-btn(@click='goToLink("/calendar")', flat, icon)
+              v-icon(color='grey') calendar_today
+            v-btn(@click='goToLink("/sponsors")', flat, icon)
+              v-icon(color='grey') group_add
+          template(v-else)
+            v-btn(@click='goToLink("/sponsors")', flat)
+              v-icon(color='grey') attach_money
+              span(class="grey--text", style="margin-left: 5px") {{"Sponsors"}}
+            v-btn(@click='goToLink("/calendar")', flat)
+              v-icon(color='grey') calendar_today
+              span(class="grey--text", style="margin-left: 5px") {{"Calendar"}}
+            v-btn(@click='goToLink("/sponsors")', flat)
+              v-icon(color='grey') group_add
+              span(class="grey--text", style="margin-left: 5px") {{"How To Join"}}
+
+      //- v-flex(md4, v-if='$vuetify.breakpoint.mdAndUp')
+      //-   v-toolbar.nav-header-inner(color='#111', dark, flat)
+      //-     slot(name='mid')
+      //-       transition(name='navHeaderSearch', v-if='searchIsShown')
+      v-flex(xs1, md2)
         v-toolbar.nav-header-inner(color='#111', dark, flat)
           v-spacer
           .navHeaderLoading.mr-3
@@ -95,14 +114,6 @@
                 v-list-tile-content
                   v-list-tile-title {{name}}
                   v-list-tile-sub-title {{email}}
-              v-divider.my-0
-              v-list-tile(href='/w', disabled)
-                v-list-tile-action: v-icon(color='blue') web
-                v-list-tile-title {{$t('common:header.myWiki')}}
-              v-divider.my-0
-              v-list-tile(href='/p', disabled)
-                v-list-tile-action: v-icon(color='blue') person
-                v-list-tile-title {{$t('common:header.profile')}}
               v-divider.my-0
               v-list-tile(@click='logout')
                 v-list-tile-action: v-icon(color='red') exit_to_app
@@ -193,6 +204,9 @@ export default {
     }
   },
   methods: {
+    goToLink(dst) {
+      window.location.assign(dst)
+    },
     searchFocus() {
       this.searchIsFocused = true
     },
