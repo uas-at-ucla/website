@@ -22,28 +22,16 @@
         v-toolbar.nav-header-inner(color='#111', dark, flat)
           a(href='/')
             v-img(src="/img/uas_logo.png", height="80%", width="300px")
-          template(v-if="$vuetify.breakpoint.smAndDown")
-            v-btn(@click='goToLink("/sponsors")', flat, icon)
-              v-icon(color='grey') attach_money
-            v-btn(@click='goToLink("/calendar")', flat, icon)
-              v-icon(color='grey') calendar_today
-            v-btn(@click='goToLink("/sponsors")', flat, icon)
-              v-icon(color='grey') group_add
-          template(v-else)
-            v-btn(@click='goToLink("/sponsors")', flat)
-              v-icon(color='grey') attach_money
-              span(class="grey--text", style="margin-left: 5px") {{"Sponsors"}}
-            v-btn(@click='goToLink("/calendar")', flat)
-              v-icon(color='grey') calendar_today
-              span(class="grey--text", style="margin-left: 5px") {{"Calendar"}}
-            v-btn(@click='goToLink("/sponsors")', flat)
-              v-icon(color='grey') group_add
-              span(class="grey--text", style="margin-left: 5px") {{"How To Join"}}
+          v-btn(@click='goToLink("/sponsors")', flat, :icon="$vuetify.breakpoint.smAndDown ? true : false")
+            v-icon(color='grey') attach_money
+            span(class="grey--text", style="margin-left: 5px", v-if="!$vuetify.breakpoint.smAndDown") {{"Sponsors"}}
+          v-btn(@click='goToLink("/calendar")', flat, :icon="$vuetify.breakpoint.smAndDown ? true : false")
+            v-icon(color='grey') calendar_today
+            span(class="grey--text", style="margin-left: 5px", v-if="!$vuetify.breakpoint.smAndDown") {{"Calendar"}}
+          v-btn(@click='goToLink("/recruitment/onboarding")', flat, :icon="$vuetify.breakpoint.smAndDown ? true : false")
+            v-icon(color='grey') group_add
+            span(class="grey--text", style="margin-left: 5px", v-if="!$vuetify.breakpoint.smAndDown") {{"How To Join"}}
 
-      //- v-flex(md4, v-if='$vuetify.breakpoint.mdAndUp')
-      //-   v-toolbar.nav-header-inner(color='#111', dark, flat)
-      //-     slot(name='mid')
-      //-       transition(name='navHeaderSearch', v-if='searchIsShown')
       v-flex(xs1, md2)
         v-toolbar.nav-header-inner(color='#111', dark, flat)
           v-spacer
@@ -176,6 +164,9 @@ export default {
     pictureUrl: get('user/pictureUrl'),
     isAuthenticated: get('user/authenticated'),
     permissions: get('user/permissions'),
+    navButtonIconMode() {
+      return $vuetify.breakpoint.smAndDown ? "icon" : ""
+    },
     picture() {
       if (this.pictureUrl && this.pictureUrl.length > 1) {
         return {
