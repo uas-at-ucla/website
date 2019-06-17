@@ -33,7 +33,7 @@
             v-icon(color='grey') group_add
             span(class="grey--text", style="margin-left: 5px", v-if="!$vuetify.breakpoint.smAndDown") {{"How To Join"}}
 
-      v-flex(xs1, md2)
+      v-flex(xs5, md3)
         v-toolbar.nav-header-inner(color='#111', dark, flat)
           v-spacer
           .navHeaderLoading.mr-3
