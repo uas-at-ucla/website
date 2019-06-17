@@ -45,7 +45,7 @@
             icon
             )
             v-icon(color='grey') search
-          v-menu(open-on-hover, offset-y, bottom, left, min-width='250', transition='slide-y-transition')
+          v-menu(open-on-hover, offset-y, bottom, left, min-width='250', transition='slide-y-transition', v-if="!$vuetify.breakpoint.smAndDown")
             v-toolbar-side-icon.btn-animate-app(slot='activator')
               v-icon(color='grey') view_module
             v-list(dense, :light='!$vuetify.dark', :dark='$vuetify.dark', :class='$vuetify.dark ? `grey darken-4` : ``').py-0
