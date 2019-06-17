@@ -21,7 +21,8 @@
       v-flex(xs8, md11)
         v-toolbar.nav-header-inner(color='#111', dark, flat)
           a(href='/')
-            v-img(src="/img/uas_logo.png", height="80%", width="300px")
+            v-img(v-if="!$vuetify.breakpoint.smAndDown" src="/img/uas_logo.png", width="300px")
+            v-img(v-if="$vuetify.breakpoint.smAndDown" src="/img/uas_logo_compact.png", width="50px")
           v-btn(@click='goToLink("/sponsors")', flat, :icon="$vuetify.breakpoint.smAndDown ? true : false")
             v-icon(color='grey') attach_money
             span(class="grey--text", style="margin-left: 5px", v-if="!$vuetify.breakpoint.smAndDown") {{"Sponsors"}}
