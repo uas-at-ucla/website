@@ -50,7 +50,7 @@
         v-divider
       v-layout(row)
         v-flex(xs12, lg9, xl10)
-          v-toolbar(:color='darkMode ? `grey darken-4-l3` : `grey lighten-4`', flat, :height='90')
+          v-toolbar(:color='darkMode ? `grey darken-4-l3` : `grey lighten-4`', flat, :height='40')
             div
               .headline.grey--text(:class='darkMode ? `text--lighten-2` : `text--darken-3`') {{title}}
               .caption.grey--text.text--darken-1 {{description}}
@@ -59,7 +59,7 @@
             slot(name='contents')
 
         v-flex(lg3, xl2, fill-height, v-if='$vuetify.breakpoint.lgAndUp')
-          v-toolbar(:color='darkMode ? `grey darken-4-l3` : `grey lighten-4`', flat, :height='90')
+          v-toolbar(:color='darkMode ? `grey darken-4-l3` : `grey lighten-4`', flat, :height='40')
             v-spacer
             v-tooltip(left)
               v-btn.btn-animate-edit(icon, slot='activator', :href='"/e/" + path')
