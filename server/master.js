@@ -56,6 +56,7 @@ module.exports = async () => {
   // ----------------------------------------
 
   app.use(express.static(path.join(WIKI.ROOTPATH, 'client', 'static', 'favicon.ico')))
+  app.use(express.static(path.join(WIKI.ROOTPATH, 'client', 'static', 'analytics.js')))
   app.use(express.static(path.join(WIKI.ROOTPATH, 'assets'), {
     index: false,
     maxAge: '7d'

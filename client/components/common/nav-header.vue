@@ -18,7 +18,7 @@
       )
     v-layout(row)
       //- v-flex(xs6, :md3='!$vuetify.breakpoint.smAndDown', :md5='$vuetify.breakpoint.smAndDown')
-      v-flex(xs8, md11)
+      v-flex(xs7, md11)
         v-toolbar.nav-header-inner(color='#111', dark, flat)
           a(href='/')
             v-img(v-if="!$vuetify.breakpoint.smAndDown" src="/img/uas_logo.png", width="300px")
@@ -82,7 +82,7 @@
                 v-list-tile-avatar: v-icon(color='grey lighten-2') burst_mode
                 v-list-tile-content.grey--text.text--ligten-2 {{$t('common:header.imagesFiles')}}
 
-          v-tooltip(bottom, v-if='isAuthenticated && isAdmin')
+          v-tooltip(bottom, v-if='isAuthenticated && isAdmin && !$vuetify.breakpoint.smAndDown')
             v-btn.btn-animate-rotate(icon, href='/a', slot='activator')
               v-icon(color='grey') settings
             span {{$t('common:header.admin')}}
