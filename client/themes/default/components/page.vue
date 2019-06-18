@@ -31,7 +31,7 @@
         v-icon menu
 
     v-content(ref='content')
-      img(v-if='path === `home`' src="/img/squad.jpg", width="100%")
+      UasBanner(v-if='path === `home`')
       template(v-if='path !== `home`')
         v-toolbar(:color='darkMode ? `grey darken-4-d3` : `grey lighten-3`', flat, dense, v-if='$vuetify.breakpoint.smAndUp')
           //- v-btn.pl-0(v-if='$vuetify.breakpoint.xsOnly', flat, @click='toggleNavigation')
@@ -125,10 +125,12 @@ import { StatusIndicator } from 'vue-status-indicator'
 import Prism from '@/libs/prism/prism.js'
 import { get } from 'vuex-pathify'
 import _ from 'lodash'
+import UasBanner from './uas-banner.vue'
 
 export default {
   components: {
-    StatusIndicator
+    StatusIndicator,
+    UasBanner
   },
   props: {
     pageId: {
