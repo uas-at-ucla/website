@@ -18,7 +18,7 @@
       )
     v-layout(row)
       //- v-flex(xs6, :md3='!$vuetify.breakpoint.smAndDown', :md5='$vuetify.breakpoint.smAndDown')
-      v-flex(xs6)
+      v-flex(xs7)
         v-toolbar.nav-header-inner(color='#111', dark, flat)
           a(href='/')
             v-img(v-if="!$vuetify.breakpoint.smAndDown" src="/img/uas_logo.png", width="300px")
@@ -33,7 +33,7 @@
             v-icon(color='grey') group_add
             span(class="grey--text", style="margin-left: 5px", v-if="!$vuetify.breakpoint.smAndDown") {{"How To Join"}}
 
-      v-flex(xs6)
+      v-flex(xs5)
         v-toolbar.nav-header-inner(color='#111', dark, flat)
           v-spacer
           .navHeaderLoading.mr-3
