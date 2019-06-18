@@ -1,11 +1,11 @@
 <template lang='pug'>
-  v-toolbar.nav-header(color='black', dark, app, clipped-left, fixed, flat, :extended='searchIsShown && $vuetify.breakpoint.smAndDown')
-    v-toolbar(color='deep-purple', flat, slot='extension', v-if='searchIsShown && $vuetify.breakpoint.smAndDown')
+  v-toolbar.nav-header(color='#111', dark, app, clipped-left, fixed, flat, :extended='searchIsShown && $vuetify.breakpoint.smAndDown')
+    v-toolbar(color='#333', flat, slot='extension', v-if='searchIsShown')
       v-text-field(
         ref='searchFieldMobile'
         v-model='search'
         clearable
-        background-color='deep-purple'
+        background-color='#333'
         color='white'
         label='Search...'
         single-line
@@ -17,11 +17,37 @@
         @keyup.enter='searchEnter'
       )
     v-layout(row)
-      v-flex(xs6, :md4='searchIsShown', :md6='!searchIsShown')
-        v-toolbar.nav-header-inner(color='black', dark, flat)
-          v-menu(open-on-hover, offset-y, bottom, left, min-width='250', transition='slide-y-transition')
+      //- v-flex(xs6, :md3='!$vuetify.breakpoint.smAndDown', :md5='$vuetify.breakpoint.smAndDown')
+      v-flex(xs7)
+        v-toolbar.nav-header-inner(color='#111', dark, flat)
+          a(href='/')
+            v-img(v-if="!$vuetify.breakpoint.smAndDown" src="/img/uas_logo.png", width="300px")
+            v-img(v-if="$vuetify.breakpoint.smAndDown" src="/img/uas_logo_compact.png", width="50px")
+          v-btn(@click='goToLink("/sponsors")', flat, :icon="$vuetify.breakpoint.smAndDown ? true : false")
+            v-icon(color='grey') attach_money
+            span(class="grey--text", style="margin-left: 5px", v-if="!$vuetify.breakpoint.smAndDown") {{"Sponsors"}}
+          v-btn(@click='goToLink("/calendar")', flat, :icon="$vuetify.breakpoint.smAndDown ? true : false")
+            v-icon(color='grey') calendar_today
+            span(class="grey--text", style="margin-left: 5px", v-if="!$vuetify.breakpoint.smAndDown") {{"Calendar"}}
+          v-btn(@click='goToLink("/recruitment/onboarding")', flat, :icon="$vuetify.breakpoint.smAndDown ? true : false")
+            v-icon(color='grey') group_add
+            span(class="grey--text", style="margin-left: 5px", v-if="!$vuetify.breakpoint.smAndDown") {{"How To Join"}}
+
+      v-flex(xs5)
+        v-toolbar.nav-header-inner(color='#111', dark, flat)
+          v-spacer
+          .navHeaderLoading.mr-3
+            v-progress-circular(indeterminate, color='blue', :size='22', :width='2' v-show='isLoading')
+          slot(name='actions')
+          v-btn(
+            v-if='!hideSearch'
+            @click='searchToggle'
+            icon
+            )
+            v-icon(color='grey') search
+          v-menu(open-on-hover, offset-y, bottom, left, min-width='250', transition='slide-y-transition', v-if="!$vuetify.breakpoint.xsOnly")
             v-toolbar-side-icon.btn-animate-app(slot='activator')
-              v-icon view_module
+              v-icon(color='grey') view_module
             v-list(dense, :light='!$vuetify.dark', :dark='$vuetify.dark', :class='$vuetify.dark ? `grey darken-4` : ``').py-0
               v-list-tile(avatar, href='/')
                 v-list-tile-avatar: v-icon(color='blue') home
@@ -55,100 +81,8 @@
               v-list-tile(avatar, @click='assets')
                 v-list-tile-avatar: v-icon(color='grey lighten-2') burst_mode
                 v-list-tile-content.grey--text.text--ligten-2 {{$t('common:header.imagesFiles')}}
-          v-toolbar-title(:class='{ "ml-2": $vuetify.breakpoint.mdAndUp, "ml-0": $vuetify.breakpoint.smAndDown }')
-            span.subheading {{title}}
-      v-flex(md4, v-if='$vuetify.breakpoint.mdAndUp')
-        v-toolbar.nav-header-inner(color='black', dark, flat)
-          slot(name='mid')
-            transition(name='navHeaderSearch', v-if='searchIsShown')
-              v-text-field(
-                ref='searchField',
-                v-if='searchIsShown && $vuetify.breakpoint.mdAndUp',
-                v-model='search',
-                color='white',
-                :label='$t(`common:header.search`)',
-                single-line,
-                solo
-                flat
-                hide-details,
-                prepend-inner-icon='search',
-                :loading='searchIsLoading',
-                @keyup.enter='searchEnter'
-                @keyup.esc='searchClose'
-                @focus='searchFocus'
-                @blur='searchBlur'
-                @keyup.down='searchMove(`down`)'
-                @keyup.up='searchMove(`up`)'
-              )
-                v-progress-linear(
-                  indeterminate,
-                  slot='progress',
-                  height='2',
-                  color='blue'
-                )
-            v-menu(
-              v-model='searchAdvMenuShown'
-              left
-              offset-y
-              min-width='450'
-              :close-on-content-click='false'
-              nudge-bottom='7'
-              nudge-right='5'
-              v-if='searchIsShown'
-              )
-              v-btn.nav-header-search-adv(icon, outline, color='grey darken-2', slot='activator')
-                v-icon(color='white') expand_more
-              v-card.radius-0(dark)
-                v-toolbar(flat, color='grey darken-4', dense)
-                  v-icon.mr-2 search
-                  v-subheader.pl-0 Advanced Search
-                  v-spacer
-                  v-chip(label, small, color='primary') Coming soon
-                v-card-text.pa-4
-                  v-checkbox.mt-0(
-                    label='Restrict to current language'
-                    color='white'
-                    v-model='searchRestrictLocale'
-                    hide-details
-                  )
-                  v-checkbox(
-                    label='Search below current path only'
-                    color='white'
-                    v-model='searchRestrictPath'
-                    hide-details
-                  )
-                v-divider
-                v-card-actions.grey.darken-3-d4
-                  v-btn(depressed, color='grey darken-3', block)
-                    v-icon(left) chevron_right
-                    span Save as defaults
-                  v-btn(depressed, color='grey darken-3', block)
-                    v-icon(left) cached
-                    span Reset
-      v-flex(xs6, :md4='searchIsShown', :md6='!searchIsShown')
-        v-toolbar.nav-header-inner(color='black', dark, flat)
-          v-spacer
-          .navHeaderLoading.mr-3
-            v-progress-circular(indeterminate, color='blue', :size='22', :width='2' v-show='isLoading')
-          slot(name='actions')
-          v-btn(
-            v-if='!hideSearch && $vuetify.breakpoint.smAndDown'
-            @click='searchToggle'
-            icon
-            )
-            v-icon(color='grey') search
-          //- v-menu(offset-y, left, transition='slide-y-transition')
-          //-   v-tooltip(bottom, slot='activator')
-          //-     v-btn(icon, slot='activator')
-          //-       v-icon(color='grey') language
-          //-     span Language
-          //-   v-list.py-0
-          //-     template(v-for='(lc, idx) of locales')
-          //-       v-list-tile(@click='changeLocale(lc)')
-          //-         v-list-tile-action: v-chip(:color='lc.code === $i18n.i18next.language ? `blue` : `grey`', small, label, dark) {{lc.code.toUpperCase()}}
-          //-         v-list-tile-title {{lc.name}}
-          //-       v-divider.my-0(v-if='idx < locales.length - 1')
-          v-tooltip(bottom, v-if='isAuthenticated && isAdmin')
+
+          v-tooltip(bottom, v-if='isAuthenticated && isAdmin && !$vuetify.breakpoint.xsOnly')
             v-btn.btn-animate-rotate(icon, href='/a', slot='activator')
               v-icon(color='grey') settings
             span {{$t('common:header.admin')}}
@@ -169,14 +103,6 @@
                 v-list-tile-content
                   v-list-tile-title {{name}}
                   v-list-tile-sub-title {{email}}
-              v-divider.my-0
-              v-list-tile(href='/w', disabled)
-                v-list-tile-action: v-icon(color='blue') web
-                v-list-tile-title {{$t('common:header.myWiki')}}
-              v-divider.my-0
-              v-list-tile(href='/p', disabled)
-                v-list-tile-action: v-icon(color='blue') person
-                v-list-tile-title {{$t('common:header.profile')}}
               v-divider.my-0
               v-list-tile(@click='logout')
                 v-list-tile-action: v-icon(color='red') exit_to_app
@@ -262,11 +188,14 @@ export default {
     }
   },
   created() {
-    if (this.hideSearch || this.dense || this.$vuetify.breakpoint.smAndDown) {
+    if (this.hideSearch || this.dense || true) {
       this.searchIsShown = false
     }
   },
   methods: {
+    goToLink(dst) {
+      window.location.assign(dst)
+    },
     searchFocus() {
       this.searchIsFocused = true
     },

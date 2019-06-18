@@ -50,7 +50,7 @@
         v-divider
       v-layout(row)
         v-flex(xs12, lg9, xl10)
-          v-toolbar(:color='darkMode ? `grey darken-4-l3` : `grey lighten-4`', flat, :height='90')
+          v-toolbar(:color='darkMode ? `grey darken-4-l3` : `grey lighten-4`', flat, :height='40')
             div
               .headline.grey--text(:class='darkMode ? `text--lighten-2` : `text--darken-3`') {{title}}
               .caption.grey--text.text--darken-1 {{description}}
@@ -59,48 +59,48 @@
             slot(name='contents')
 
         v-flex(lg3, xl2, fill-height, v-if='$vuetify.breakpoint.lgAndUp')
-          v-toolbar(:color='darkMode ? `grey darken-4-l3` : `grey lighten-4`', flat, :height='90')
+          v-toolbar(:color='darkMode ? `grey darken-4-l3` : `grey lighten-4`', flat, :height='40')
             v-spacer
             v-tooltip(left)
               v-btn.btn-animate-edit(icon, slot='activator', :href='"/e/" + path')
                 v-icon(color='grey') edit
               span {{$t('common:page.editPage')}}
           v-divider
-          template(v-if='toc.length')
-            v-list.grey.pb-3(dense, :class='darkMode ? `darken-3-d3` : `lighten-3`')
-              v-subheader.pl-4(:class='darkMode ? `indigo--text text--lighten-3` : `primary--text`') {{$t('common:page.toc')}}
-              template(v-for='(tocItem, tocIdx) in toc')
-                v-list-tile(@click='$vuetify.goTo(tocItem.anchor, scrollOpts)')
-                  v-icon(color='grey') arrow_right
-                  v-list-tile-title.pl-3 {{tocItem.title}}
-                v-divider.ml-4(v-if='tocIdx < toc.length - 1 || tocItem.children.length')
-                template(v-for='tocSubItem in tocItem.children')
-                  v-list-tile(@click='$vuetify.goTo(tocSubItem.anchor, scrollOpts)')
-                    v-icon.pl-3(color='grey lighten-1') arrow_right
-                    v-list-tile-title.pl-3.caption {{tocSubItem.title}}
-                  v-divider(inset, v-if='tocIdx < toc.length - 1')
-            v-divider
-          //- v-list.grey(dense, :class='darkMode ? `darken-3` : `lighten-4`')
-          //-   v-subheader.pl-4.yellow--text.text--darken-4 Rating
-          //-   .text-xs-center
-          //-     v-rating(
-          //-       v-model='rating'
-          //-       color='yellow darken-3'
-          //-       background-color='grey lighten-1'
-          //-       half-increments
-          //-       hover
-          //-     )
-          //-     .pb-2.caption.grey--text 5 votes
-          //- v-divider
-          template(v-if='tags.length')
-            v-list.grey(dense, :class='darkMode ? `darken-3-d3` : `lighten-3`')
-              v-subheader.pl-4.teal--text Tags
-              template(v-for='(tag, idx) in tags')
-                v-list-tile(:href='`/t/` + tag.slug')
-                  v-list-tile-avatar: v-icon(color='teal') label
-                  v-list-tile-title {{tag.title}}
-                v-divider(inset, v-if='idx < tags.length - 1')
-            v-divider
+        //-   template(v-if='toc.length')
+        //-     v-list.grey.pb-3(dense, :class='darkMode ? `darken-3-d3` : `lighten-3`')
+        //-       v-subheader.pl-4(:class='darkMode ? `indigo--text text--lighten-3` : `primary--text`') {{$t('common:page.toc')}}
+        //-       template(v-for='(tocItem, tocIdx) in toc')
+        //-         v-list-tile(@click='$vuetify.goTo(tocItem.anchor, scrollOpts)')
+        //-           v-icon(color='grey') arrow_right
+        //-           v-list-tile-title.pl-3 {{tocItem.title}}
+        //-         v-divider.ml-4(v-if='tocIdx < toc.length - 1 || tocItem.children.length')
+        //-         template(v-for='tocSubItem in tocItem.children')
+        //-           v-list-tile(@click='$vuetify.goTo(tocSubItem.anchor, scrollOpts)')
+        //-             v-icon.pl-3(color='grey lighten-1') arrow_right
+        //-             v-list-tile-title.pl-3.caption {{tocSubItem.title}}
+        //-           v-divider(inset, v-if='tocIdx < toc.length - 1')
+        //-     v-divider
+        //-   //- v-list.grey(dense, :class='darkMode ? `darken-3` : `lighten-4`')
+        //-   //-   v-subheader.pl-4.yellow--text.text--darken-4 Rating
+        //-   //-   .text-xs-center
+        //-   //-     v-rating(
+        //-   //-       v-model='rating'
+        //-   //-       color='yellow darken-3'
+        //-   //-       background-color='grey lighten-1'
+        //-   //-       half-increments
+        //-   //-       hover
+        //-   //-     )
+        //-   //-     .pb-2.caption.grey--text 5 votes
+        //-   //- v-divider
+        //-   template(v-if='tags.length')
+        //-     v-list.grey(dense, :class='darkMode ? `darken-3-d3` : `lighten-3`')
+        //-       v-subheader.pl-4.teal--text Tags
+        //-       template(v-for='(tag, idx) in tags')
+        //-         v-list-tile(:href='`/t/` + tag.slug')
+        //-           v-list-tile-avatar: v-icon(color='teal') label
+        //-           v-list-tile-title {{tag.title}}
+        //-         v-divider(inset, v-if='idx < tags.length - 1')
+        //-     v-divider
     nav-footer
     notify
     search-results
