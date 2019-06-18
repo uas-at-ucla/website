@@ -1,5 +1,5 @@
 <template lang="pug">
-  v-app(v-if='path !== `home`', v-scroll='upBtnScroll', :dark='darkMode')
+  v-app(v-scroll='upBtnScroll', :dark='darkMode')
     nav-header
     v-navigation-drawer(
       :class='darkMode ? `grey darken-5` : `primary`'
@@ -29,6 +29,8 @@
         v-show='!navShown'
         )
         v-icon menu
+
+    img(src="/squad.jpg")
 
     v-content(ref='content')
       template(v-if='path !== `home`')
@@ -117,8 +119,6 @@
         color='primary'
         )
         v-icon arrow_upward
-  div(v-else)
-    UasAtUcla
 </template>
 
 <script>
@@ -126,12 +126,10 @@ import { StatusIndicator } from 'vue-status-indicator'
 import Prism from '@/libs/prism/prism.js'
 import { get } from 'vuex-pathify'
 import _ from 'lodash'
-import UasAtUcla from './uasatucla.vue'
 
 export default {
   components: {
-    StatusIndicator,
-    UasAtUcla
+    StatusIndicator
   },
   props: {
     pageId: {
