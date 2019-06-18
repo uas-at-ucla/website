@@ -45,7 +45,7 @@
             icon
             )
             v-icon(color='grey') search
-          v-menu(open-on-hover, offset-y, bottom, left, min-width='250', transition='slide-y-transition')
+          v-menu(open-on-hover, offset-y, bottom, left, min-width='250', transition='slide-y-transition', v-if="!$vuetify.breakpoint.xsOnly")
             v-toolbar-side-icon.btn-animate-app(slot='activator')
               v-icon(color='grey') view_module
             v-list(dense, :light='!$vuetify.dark', :dark='$vuetify.dark', :class='$vuetify.dark ? `grey darken-4` : ``').py-0
@@ -82,7 +82,7 @@
                 v-list-tile-avatar: v-icon(color='grey lighten-2') burst_mode
                 v-list-tile-content.grey--text.text--ligten-2 {{$t('common:header.imagesFiles')}}
 
-          v-tooltip(bottom, v-if='isAuthenticated && isAdmin')
+          v-tooltip(bottom, v-if='isAuthenticated && isAdmin && !$vuetify.breakpoint.xsOnly')
             v-btn.btn-animate-rotate(icon, href='/a', slot='activator')
               v-icon(color='grey') settings
             span {{$t('common:header.admin')}}
@@ -165,9 +165,6 @@ export default {
     pictureUrl: get('user/pictureUrl'),
     isAuthenticated: get('user/authenticated'),
     permissions: get('user/permissions'),
-    navButtonIconMode() {
-      return $vuetify.breakpoint.smAndDown ? "icon" : ""
-    },
     picture() {
       if (this.pictureUrl && this.pictureUrl.length > 1) {
         return {
