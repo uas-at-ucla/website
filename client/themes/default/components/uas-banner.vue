@@ -1,10 +1,41 @@
-// TODO Make banner fancy. i.e. scrolling images.
 <template>
-  <img
-    src="/img/squad.jpg"
+  <v-carousel
+    hide-delimiters
+    interval="3000"
     width="100%"
-  >
+    height="500">
+    <v-carousel-item src="/img/front_page_carousel/squad.jpg" />
+    <v-carousel-item src="/img/front_page_carousel/auvsi_group_photo.jpg" />
+    <v-carousel-item src="/img/front_page_carousel/spinny_grad_photo.jpg" />
+    <v-carousel-item src="/img/front_page_carousel/software_workshop.jpg" />
+    <v-carousel-item src="/img/front_page_carousel/flappy.jpg" />
+    <v-carousel-item src="/img/front_page_carousel/spinny_portrait.jpg" />
+    <v-carousel-item src="/img/front_page_carousel/mathz.jpg" />
+    <v-carousel-item src="/img/front_page_carousel/spinny_render.jpg" />
+    <v-carousel-item src="/img/front_page_carousel/veritasium1.jpg" />
+    <v-carousel-item src="/img/front_page_carousel/veritasium2.jpg" />
+    <v-carousel-item src="/img/front_page_carousel/2016_auvsi.jpg" />
+  </v-carousel>
 </template>
+
+<script>
+export default {
+  data() {
+    return {
+      slide: 0,
+      sliding: null
+    }
+  },
+  methods: {
+    onSlideStart(slide) {
+      this.sliding = true
+    },
+    onSlideEnd(slide) {
+      this.sliding = false
+    }
+  }
+}
+</script>
 
 <style>
 
