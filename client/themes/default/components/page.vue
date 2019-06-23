@@ -67,41 +67,6 @@
                 v-icon(color='grey') edit
               span {{$t('common:page.editPage')}}
           v-divider
-        //-   template(v-if='toc.length')
-        //-     v-list.grey.pb-3(dense, :class='darkMode ? `darken-3-d3` : `lighten-3`')
-        //-       v-subheader.pl-4(:class='darkMode ? `indigo--text text--lighten-3` : `primary--text`') {{$t('common:page.toc')}}
-        //-       template(v-for='(tocItem, tocIdx) in toc')
-        //-         v-list-tile(@click='$vuetify.goTo(tocItem.anchor, scrollOpts)')
-        //-           v-icon(color='grey') arrow_right
-        //-           v-list-tile-title.pl-3 {{tocItem.title}}
-        //-         v-divider.ml-4(v-if='tocIdx < toc.length - 1 || tocItem.children.length')
-        //-         template(v-for='tocSubItem in tocItem.children')
-        //-           v-list-tile(@click='$vuetify.goTo(tocSubItem.anchor, scrollOpts)')
-        //-             v-icon.pl-3(color='grey lighten-1') arrow_right
-        //-             v-list-tile-title.pl-3.caption {{tocSubItem.title}}
-        //-           v-divider(inset, v-if='tocIdx < toc.length - 1')
-        //-     v-divider
-        //-   //- v-list.grey(dense, :class='darkMode ? `darken-3` : `lighten-4`')
-        //-   //-   v-subheader.pl-4.yellow--text.text--darken-4 Rating
-        //-   //-   .text-xs-center
-        //-   //-     v-rating(
-        //-   //-       v-model='rating'
-        //-   //-       color='yellow darken-3'
-        //-   //-       background-color='grey lighten-1'
-        //-   //-       half-increments
-        //-   //-       hover
-        //-   //-     )
-        //-   //-     .pb-2.caption.grey--text 5 votes
-        //-   //- v-divider
-        //-   template(v-if='tags.length')
-        //-     v-list.grey(dense, :class='darkMode ? `darken-3-d3` : `lighten-3`')
-        //-       v-subheader.pl-4.teal--text Tags
-        //-       template(v-for='(tag, idx) in tags')
-        //-         v-list-tile(:href='`/t/` + tag.slug')
-        //-           v-list-tile-avatar: v-icon(color='teal') label
-        //-           v-list-tile-title {{tag.title}}
-        //-         v-divider(inset, v-if='idx < tags.length - 1')
-        //-     v-divider
     nav-footer
     notify
     search-results
