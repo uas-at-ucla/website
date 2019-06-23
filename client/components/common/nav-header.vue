@@ -29,7 +29,7 @@
           v-btn(@click='goToLink("/calendar")', flat, :icon="$vuetify.breakpoint.smAndDown ? true : false")
             v-icon(color='grey') calendar_today
             span(class="grey--text", style="margin-left: 5px", v-if="!$vuetify.breakpoint.smAndDown") {{"Calendar"}}
-          v-btn(@click='goToLink("/recruitment/onboarding")', flat, :icon="$vuetify.breakpoint.smAndDown ? true : false")
+          v-btn(@click='goToLink("/join")', flat, :icon="$vuetify.breakpoint.smAndDown ? true : false")
             v-icon(color='grey') group_add
             span(class="grey--text", style="margin-left: 5px", v-if="!$vuetify.breakpoint.smAndDown") {{"How To Join"}}
 
