@@ -8,7 +8,7 @@
     )
     .dialog-header
       v-icon(color='white') sort_by_alpha
-      .subheading.white--text.ml-2 Page Properties
+      .subheading.white--text.ml-2 {{$t('editor:props.pageProperties')}}
       v-spacer
       v-btn.mx-0(
         outline
@@ -19,34 +19,34 @@
         span {{ $t('common:actions.ok') }}
     v-card.wiki-form(tile)
       v-card-text
-        v-subheader.pl-0 Page Info
+        v-subheader.pl-0 {{$t('editor:props.pageInfo')}}
         v-text-field(
           ref='iptTitle'
           outline
           background-color='grey lighten-2'
-          label='Title'
+          :label='$t(`editor:props.title`)'
           counter='255'
           v-model='title'
           )
         v-text-field(
           outline
           background-color='grey lighten-2'
-          label='Short Description'
+          :label='$t(`editor:props.shortDescription`)'
           counter='255'
           v-model='description'
           persistent-hint
-          hint='Shown below the title'
+          :hint='$t(`editor:props.shortDescriptionHint`)'
           )
       v-divider
       v-card-text.grey(:class='darkMode ? `darken-3-d3` : `lighten-5`')
-        v-subheader.pl-0 Path &amp; Categorization
+        v-subheader.pl-0 {{$t('editor:props.pathCategorization')}}
         v-container.pa-0(fluid, grid-list-lg)
           v-layout(row, wrap)
             v-flex(xs12, md2)
               v-select(
                 outline
                 background-color='grey lighten-2'
-                label='Locale'
+                :label='$t(`editor:props.locale`)'
                 suffix='/'
                 :items='namespaces'
                 v-model='locale'
@@ -57,10 +57,10 @@
               v-text-field(
                 outline
                 background-color='grey lighten-2'
-                label='Path'
+                :label='$t(`editor:props.path`)'
                 append-icon='folder'
                 v-model='path'
-                hint='Do not include any leading or trailing slashes.'
+                :hint='$t(`editor:props.pathHint`)'
                 persistent-hint
                 @click:append='showPathSelector'
                 :disabled='mode !== "create"'
@@ -69,26 +69,28 @@
           background-color='grey lighten-2'
           chips
           deletable-chips
-          label='Tags'
+          :label='$t(`editor:props.tags`)'
           outline
           multiple
           v-model='tags'
           single-line
-          hint='Use tags to categorize your pages and make them easier to find.'
+          :hint='`COMING SOON - ` + $t(`editor:props.tagsHint`)'
           persistent-hint
+          disabled
           )
       v-divider
       v-card-text.pb-5.grey(:class='darkMode ? `darken-3-d5` : `lighten-4`')
-        v-subheader.pl-0 Publishing State
+        v-subheader.pl-0 {{$t('editor:props.publishState')}} #[v-chip.ml-3(label, color='grey', small, outline).white--text coming soon]
         v-container.pa-0(fluid, grid-list-lg)
           v-layout(row, wrap)
             v-flex(xs12, md4)
               v-switch(
-                label='Published'
+                :label='$t(`editor:props.publishToggle`)'
                 v-model='isPublished'
                 color='primary'
-                hint='Unpublished pages can still be seen by users having write permissions on this page.'
+                :hint='$t(`editor:props.publishToggleHint`)'
                 persistent-hint
+                disabled
                 )
             v-flex(xs12, md4)
               v-dialog(
@@ -99,20 +101,20 @@
                 :return-value.sync='publishStartDate'
                 full-width
                 width='460px'
-                :disabled='!isPublished'
+                :disabled='!isPublished || true'
                 )
                 v-text-field(
                   slot='activator'
-                  label='Publish starting on...'
+                  :label='$t(`editor:props.publishStart`)'
                   v-model='publishStartDate'
                   prepend-icon='event'
                   readonly
                   outline
                   background-color='grey lighten-2'
                   clearable
-                  hint='Leave empty for no start date'
+                  :hint='$t(`editor:props.publishStartHint`)'
                   persistent-hint
-                  :disabled='!isPublished'
+                  :disabled='!isPublished || true'
                   )
                 v-date-picker(
                   v-model='publishStartDate'
@@ -127,12 +129,12 @@
                     flat=''
                     color='primary'
                     @click='isPublishStartShown = false'
-                    ) Cancel
+                    ) {{$t('common:actions.cancel')}}
                   v-btn(
                     flat=''
                     color='primary'
                     @click='$refs.menuPublishStart.save(publishStartDate)'
-                    ) OK
+                    ) {{$t('common:actions.ok')}}
             v-flex(xs12, md4)
               v-dialog(
                 ref='menuPublishEnd'
@@ -142,20 +144,20 @@
                 :return-value.sync='publishEndDate'
                 full-width
                 width='460px'
-                :disabled='!isPublished'
+                :disabled='!isPublished || true'
                 )
                 v-text-field(
                   slot='activator'
-                  label='Publish ending on...'
+                  :label='$t(`editor:props.publishEnd`)'
                   v-model='publishEndDate'
                   prepend-icon='event'
                   readonly
                   outline
                   background-color='grey lighten-2'
                   clearable
-                  hint='Leave empty for no end date'
+                  :hint='$t(`editor:props.publishEndHint`)'
                   persistent-hint
-                  :disabled='!isPublished'
+                  :disabled='!isPublished || true'
                   )
                 v-date-picker(
                   v-model='publishEndDate'
@@ -170,12 +172,12 @@
                     flat=''
                     color='primary'
                     @click='isPublishEndShown = false'
-                    ) Cancel
+                    ) {{$t('common:actions.cancel')}}
                   v-btn(
                     flat=''
                     color='primary'
                     @click='$refs.menuPublishEnd.save(publishEndDate)'
-                    ) OK
+                    ) {{$t('common:actions.ok')}}
 
     page-selector(mode='create', v-model='pageSelectorShown', :path='path', :locale='locale', :open-handler='setPath')
     v-tour(name='editorPropertiesTour', :steps='tourSteps')
@@ -184,6 +186,8 @@
 <script>
 import _ from 'lodash'
 import { sync, get } from 'vuex-pathify'
+
+/* global siteLangs, siteConfig */
 
 export default {
   props: {
@@ -197,7 +201,7 @@ export default {
       isPublishStartShown: false,
       isPublishEndShown: false,
       pageSelectorShown: false,
-      namespaces: ['en'],
+      namespaces: siteLangs.length ? siteLangs.map(ns => ns.code) : [siteConfig.lang],
       tourSteps: [
         {
           target: '.dialog-header',

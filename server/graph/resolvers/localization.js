@@ -56,7 +56,7 @@ module.exports = {
         WIKI.config.lang.code = args.locale
         WIKI.config.lang.autoUpdate = args.autoUpdate
         WIKI.config.lang.namespacing = args.namespacing
-        WIKI.config.lang.namespaces = args.namespaces
+        WIKI.config.lang.namespaces = _.union(args.namespaces, [args.locale])
 
         const newLocale = await WIKI.models.locales.query().select('isRTL').where('code', args.locale).first()
         WIKI.config.lang.rtl = newLocale.isRTL
@@ -65,6 +65,8 @@ module.exports = {
 
         await WIKI.lang.setCurrentLocale(args.locale)
         await WIKI.lang.refreshNamespaces()
+
+        await WIKI.cache.del('nav:locales')
 
         return {
           responseResult: graphHelper.generateSuccess('Locale config updated')

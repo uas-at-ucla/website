@@ -5,20 +5,20 @@
         v-spacer
         v-btn.animated.fadeInRight(flat, @click='closeAllModal')
           v-icon(left) remove_circle_outline
-          span Back to Editor
+          span {{$t('editor:backToEditor')}}
       template(v-else)
         v-tooltip(bottom, color='primary')
           v-btn.animated.fadeIn(icon, slot='activator', @click='toggleMarkup({ start: `**` })').mx-0
             v-icon format_bold
-          span Bold
+          span {{$t('editor:markup.bold')}}
         v-tooltip(bottom, color='primary')
           v-btn.animated.fadeIn.wait-p1s(icon, slot='activator', @click='toggleMarkup({ start: `*` })').mx-0
             v-icon format_italic
-          span Italic
+          span {{$t('editor:markup.italic')}}
         v-tooltip(bottom, color='primary')
           v-btn.animated.fadeIn.wait-p2s(icon, slot='activator', @click='toggleMarkup({ start: `~~` })').mx-0
             v-icon format_strikethrough
-          span Strikethrough
+          span {{$t('editor:markup.strikethrough')}}
         v-menu(offset-y, open-on-hover)
           v-btn.animated.fadeIn.wait-p3s(icon, slot='activator').mx-0
             v-icon text_fields
@@ -27,16 +27,16 @@
               v-list-tile(@click='setHeaderLine(n)', :key='idx')
                 v-list-tile-action
                   v-icon(:size='24 - (idx - 1) * 2') title
-                v-list-tile-title Heading {{n}}
+                v-list-tile-title {{$t('editor:markup.heading', { level: n })}}
               v-divider(v-if='idx < 5')
         v-tooltip(bottom, color='primary')
           v-btn.animated.fadeIn.wait-p4s(icon, slot='activator', @click='toggleMarkup({ start: `~` })').mx-0
             v-icon vertical_align_bottom
-          span Subscript
+          span {{$t('editor:markup.subscript')}}
         v-tooltip(bottom, color='primary')
           v-btn.animated.fadeIn.wait-p5s(icon, slot='activator', @click='toggleMarkup({ start: `^` })').mx-0
             v-icon vertical_align_top
-          span Superscript
+          span {{$t('editor:markup.superscript')}}
         v-menu(offset-y, open-on-hover)
           v-btn.animated.fadeIn.wait-p6s(icon, slot='activator').mx-0
             v-icon format_quote
@@ -44,99 +44,102 @@
             v-list-tile(@click='insertBeforeEachLine({ content: `> `})')
               v-list-tile-action
                 v-icon format_quote
-              v-list-tile-title Blockquote
+              v-list-tile-title {{$t('editor:markup.blockquote')}}
             v-divider
             v-list-tile(@click='insertBeforeEachLine({ content: `> `, after: `{.is-info}`})')
               v-list-tile-action
                 v-icon(color='blue') format_quote
-              v-list-tile-title Info Blockquote
+              v-list-tile-title {{$t('editor:markup.blockquoteInfo')}}
             v-divider
             v-list-tile(@click='insertBeforeEachLine({ content: `> `, after: `{.is-success}`})')
               v-list-tile-action
                 v-icon(color='success') format_quote
-              v-list-tile-title Success Blockquote
+              v-list-tile-title {{$t('editor:markup.blockquoteSuccess')}}
             v-divider
             v-list-tile(@click='insertBeforeEachLine({ content: `> `, after: `{.is-warning}`})')
               v-list-tile-action
                 v-icon(color='warning') format_quote
-              v-list-tile-title Warning Blockquote
+              v-list-tile-title {{$t('editor:markup.blockquoteWarning')}}
             v-divider
             v-list-tile(@click='insertBeforeEachLine({ content: `> `, after: `{.is-danger}`})')
               v-list-tile-action
                 v-icon(color='error') format_quote
-              v-list-tile-title Error Blockquote
+              v-list-tile-title {{$t('editor:markup.blockquoteError')}}
             v-divider
         v-tooltip(bottom, color='primary')
           v-btn.animated.fadeIn.wait-p7s(icon, slot='activator', @click='insertBeforeEachLine({ content: `- `})').mx-0
             v-icon format_list_bulleted
-          span Unordered List
+          span {{$t('editor:markup.unorderedList')}}
         v-tooltip(bottom, color='primary')
           v-btn.animated.fadeIn.wait-p8s(icon, slot='activator', @click='insertBeforeEachLine({ content: `1. `})').mx-0
             v-icon format_list_numbered
-          span Ordered List
+          span {{$t('editor:markup.orderedList')}}
         v-tooltip(bottom, color='primary')
           v-btn.animated.fadeIn.wait-p9s(icon, slot='activator', @click='toggleMarkup({ start: "`" })').mx-0
             v-icon space_bar
-          span Inline Code
+          span {{$t('editor:markup.inlineCode')}}
         v-tooltip(bottom, color='primary')
           v-btn.animated.fadeIn.wait-p10s(icon, slot='activator', @click='toggleMarkup({ start: `<kbd>`, end: `</kbd>` })').mx-0
             v-icon font_download
-          span Keyboard Key
+          span {{$t('editor:markup.keyboardKey')}}
         v-tooltip(bottom, color='primary')
           v-btn.animated.fadeIn.wait-p11s(icon, slot='activator', @click='insertAfter({ content: `---`, newLine: true })').mx-0
             v-icon remove
-          span Horizontal Bar
+          span {{$t('editor:markup.horizontalBar')}}
+        template(v-if='$vuetify.breakpoint.mdAndUp')
+          v-spacer
+          v-tooltip(bottom, color='primary')
+            v-btn.animated.fadeIn.wait-p11s(icon, slot='activator', @click='previewShown = !previewShown').mx-0
+              v-icon flip
+            span {{$t('editor:markup.togglePreviewPane')}}
     .editor-markdown-main
       .editor-markdown-sidebar
         v-tooltip(right, color='teal')
           v-btn.animated.fadeInLeft(icon, slot='activator', dark, disabled).mx-0
             v-icon link
-          span Insert Link
+          span {{$t('editor:markup.insertLink')}}
         v-tooltip(right, color='teal')
           v-btn.animated.fadeInLeft.wait-p1s(icon, slot='activator', dark, @click='toggleModal(`editorModalMedia`)').mx-0
             v-icon(:color='activeModal === `editorModalMedia` ? `teal` : ``') burst_mode
-          span Insert Assets
+          span {{$t('editor:markup.insertAssets')}}
         v-tooltip(right, color='teal')
           v-btn.animated.fadeInLeft.wait-p2s(icon, slot='activator', dark, @click='toggleModal(`editorModalBlocks`)').mx-0
             v-icon(:color='activeModal === `editorModalBlocks` ? `teal` : ``') dashboard
-          span Insert Block
+          span {{$t('editor:markup.insertBlock')}}
         v-tooltip(right, color='teal')
           v-btn.animated.fadeInLeft.wait-p3s(icon, slot='activator', dark, disabled).mx-0
             v-icon code
-          span Insert Code Block
+          span {{$t('editor:markup.insertCodeBlock')}}
         v-tooltip(right, color='teal')
           v-btn.animated.fadeInLeft.wait-p4s(icon, slot='activator', dark, disabled).mx-0
             v-icon play_circle_outline
-          span Insert Video / Audio
+          span {{$t('editor:markup.insertVideoAudio')}}
         v-tooltip(right, color='teal')
           v-btn.animated.fadeInLeft.wait-p5s(icon, slot='activator', dark, disabled).mx-0
             v-icon multiline_chart
-          span Insert Diagram
+          span {{$t('editor:markup.insertDiagram')}}
         v-tooltip(right, color='teal')
           v-btn.animated.fadeInLeft.wait-p6s(icon, slot='activator', dark, disabled).mx-0
             v-icon functions
-          span Insert Math Expression
+          span {{$t('editor:markup.insertMathExpression')}}
         v-tooltip(right, color='teal')
           v-btn.animated.fadeInLeft.wait-p7s(icon, slot='activator', dark, disabled).mx-0
             v-icon border_outer
-          span Table Helper
+          span {{$t('editor:markup.tableHelper')}}
         template(v-if='$vuetify.breakpoint.mdAndUp')
           v-spacer
           v-tooltip(right, color='teal')
             v-btn.animated.fadeInLeft.wait-p8s(icon, slot='activator', dark, @click='toggleFullscreen').mx-0
               v-icon crop_free
-            span Distraction Free Mode
+            span {{$t('editor:markup.distractionFreeMode')}}
           v-tooltip(right, color='teal')
             v-btn.animated.fadeInLeft.wait-p9s(icon, slot='activator', dark, @click='toggleHelp').mx-0
               v-icon(:color='helpShown ? `teal` : ``') help
-            span Markdown Formatting Help
+            span {{$t('editor:markup.markdownFormattingHelp')}}
       .editor-markdown-editor
-        .editor-markdown-editor-title(v-if='previewShown', @click='previewShown = false') Editor
-        .editor-markdown-editor-title(v-else='previewShown', @click='previewShown = true'): v-icon(dark) drag_indicator
         codemirror(ref='cm', v-model='code', :options='cmOptions', @ready='onCmReady', @input='onCmInput')
       transition(name='editor-markdown-preview')
         .editor-markdown-preview(v-if='previewShown')
-          .editor-markdown-preview-title(@click='previewShown = false') Preview
           .editor-markdown-preview-content.contents(ref='editorPreview', v-html='previewHTML')
 
     v-system-bar.editor-markdown-sysbar(dark, status, color='grey darken-3')
@@ -246,7 +249,8 @@ export default {
   },
   props: {
     save: {
-      type: Function
+      type: Function,
+      default: () => {}
     }
   },
   data() {
@@ -264,7 +268,9 @@ export default {
         highlightSelectionMatches: {
           annotateScrollbar: true
         },
-        viewportMargin: 50
+        viewportMargin: 50,
+        inputStyle: 'contenteditable',
+        allowDropFileTypes: ['image/jpg', 'image/png', 'image/svg', 'image/jpeg', 'image/gif']
       },
       cursorPos: { ch: 0, line: 1 },
       previewShown: true,
@@ -339,6 +345,7 @@ export default {
         this.positionSync(cm)
         this.scrollSync(cm)
       })
+      cm.on('paste', this.onCmPaste)
       this.onCmInput(this.code)
     },
     onCmInput: _.debounce(function (newContent) {
@@ -351,6 +358,23 @@ export default {
         this.scrollSync(this.cm)
       })
     }, 500),
+    onCmPaste (cm, ev) {
+      const clipItems = (ev.clipboardData || ev.originalEvent.clipboardData).items
+      for (const clipItem of clipItems) {
+        if (_.startsWith(clipItem.type, 'image/')) {
+          const file = clipItem.getAsFile()
+          const reader = new FileReader()
+          reader.onload = evt => {
+            this.$store.commit(`loadingStart`, 'editor-paste-image')
+            this.insertAfter({
+              content: `![${file.name}](${evt.target.result})`,
+              newLine: true
+            })
+          }
+          reader.readAsDataURL(file)
+        }
+      }
+    },
     /**
      * Update cursor state
      */
@@ -364,7 +388,7 @@ export default {
       if (!end) { end = start }
       if (!this.cm.doc.somethingSelected()) {
         return this.$store.commit('showNotification', {
-          message: 'You must select something first!',
+          message: this.$t('editor:markup.noSelectionError'),
           style: 'warning',
           icon: 'warning'
         })
@@ -514,28 +538,6 @@ $editor-height-mobile: calc(100vh - 112px - 16px);
     @include until($tablet) {
       height: $editor-height-mobile;
     }
-
-    &-title {
-      background-color: mc('grey', '800');
-      border-bottom-left-radius: 5px;
-      display: inline-flex;
-      height: 30px;
-      justify-content: center;
-      align-items: center;
-      padding: 0 1rem;
-      color: mc('grey', '500');
-      position: absolute;
-      top: 0;
-      right: 0;
-      z-index: 7;
-      text-transform: uppercase;
-      font-size: .7rem;
-      cursor: pointer;
-
-      @include until($tablet) {
-        display: none;
-      }
-    }
   }
 
   &-preview {
@@ -581,24 +583,6 @@ $editor-height-mobile: calc(100vh - 112px - 16px);
       @include until($tablet) {
         height: $editor-height-mobile;
       }
-    }
-
-    &-title {
-      background-color: rgba(mc('blue', '100'), .75);
-      border-bottom-right-radius: 5px;
-      display: inline-flex;
-      height: 30px;
-      justify-content: center;
-      align-items: center;
-      padding: 0 1rem;
-      color: mc('blue', '800');
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: 2;
-      text-transform: uppercase;
-      font-size: .7rem;
-      cursor: pointer;
     }
   }
 

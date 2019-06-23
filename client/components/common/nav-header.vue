@@ -83,6 +83,100 @@
                 v-list-tile-content.grey--text.text--ligten-2 {{$t('common:header.imagesFiles')}}
 
           v-tooltip(bottom, v-if='isAuthenticated && isAdmin && !$vuetify.breakpoint.xsOnly')
+          //- v-toolbar-title(:class='{ "ml-2": $vuetify.breakpoint.mdAndUp, "ml-0": $vuetify.breakpoint.smAndDown }')
+            //- span.subheading {{title}}
+      //- v-flex(md4, v-if='$vuetify.breakpoint.mdAndUp')
+        //- v-toolbar.nav-header-inner(color='black', dark, flat)
+          //- slot(name='mid')
+            //- transition(name='navHeaderSearch', v-if='searchIsShown')
+              //- v-text-field(
+                //- ref='searchField',
+                //- v-if='searchIsShown && $vuetify.breakpoint.mdAndUp',
+                //- v-model='search',
+                //- color='white',
+                //- :label='$t(`common:header.search`)',
+                //- single-line,
+                //- solo
+                //- flat
+                //- hide-details,
+                //- prepend-inner-icon='search',
+                //- :loading='searchIsLoading',
+                //- @keyup.enter='searchEnter'
+                //- @keyup.esc='searchClose'
+                //- @focus='searchFocus'
+                //- @blur='searchBlur'
+                //- @keyup.down='searchMove(`down`)'
+                //- @keyup.up='searchMove(`up`)'
+              //- )
+                //- v-progress-linear(
+                  //- indeterminate,
+                  //- slot='progress',
+                  //- height='2',
+                  //- color='blue'
+                //- )
+            //- v-menu(
+              //- v-model='searchAdvMenuShown'
+              //- left
+              //- offset-y
+              //- min-width='450'
+              //- :close-on-content-click='false'
+              //- nudge-bottom='7'
+              //- nudge-right='5'
+              //- v-if='searchIsShown'
+              //- )
+              //- v-btn.nav-header-search-adv(icon, outline, color='grey darken-2', slot='activator')
+                //- v-icon(color='white') expand_more
+              //- v-card.radius-0(dark)
+                //- v-toolbar(flat, color='grey darken-4', dense)
+                  //- v-icon.mr-2 search
+                  //- v-subheader.pl-0 Advanced Search
+                  //- v-spacer
+                  //- v-chip(label, small, color='primary') Coming soon
+                //- v-card-text.pa-4
+                  //- v-checkbox.mt-0(
+                    //- label='Restrict to current language'
+                    //- color='white'
+                    //- v-model='searchRestrictLocale'
+                    //- hide-details
+                  //- )
+                  //- v-checkbox(
+                    //- label='Search below current path only'
+                    //- color='white'
+                    //- v-model='searchRestrictPath'
+                    //- hide-details
+                  //- )
+                //- v-divider
+                //- v-card-actions.grey.darken-3-d4
+                  //- v-btn(depressed, color='grey darken-3', block)
+                    //- v-icon(left) chevron_right
+                    //- span Save as defaults
+                  //- v-btn(depressed, color='grey darken-3', block)
+                    //- v-icon(left) cached
+                    //- span Reset
+      //- v-flex(xs6, :md4='searchIsShown', :md6='!searchIsShown')
+        //- v-toolbar.nav-header-inner(color='black', dark, flat)
+          //- v-spacer
+          //- .navHeaderLoading.mr-3
+            //- v-progress-circular(indeterminate, color='blue', :size='22', :width='2' v-show='isLoading')
+          //- slot(name='actions')
+          //- v-btn(
+            //- v-if='!hideSearch && $vuetify.breakpoint.smAndDown'
+            //- @click='searchToggle'
+            //- icon
+            //- )
+            //- v-icon(color='grey') search
+          //- v-menu(offset-y, left, transition='slide-y-transition', v-if='mode === `view` && locales.length > 0')
+            //- v-tooltip(bottom, slot='activator')
+              //- v-btn(icon, slot='activator')
+                //- v-icon(color='grey') language
+              //- span {{$t('common:header.language')}}
+            //- v-list.py-0
+              //- template(v-for='(lc, idx) of locales')
+                //- v-list-tile(@click='changeLocale(lc)')
+                  //- v-list-tile-action: v-chip(:color='lc.code === locale ? `blue` : `grey`', small, label, dark) {{lc.code.toUpperCase()}}
+                  //- v-list-tile-title {{lc.name}}
+                //- v-divider.my-0(v-if='idx < locales.length - 1')
+          //- v-tooltip(bottom, v-if='isAuthenticated && isAdmin')
             v-btn.btn-animate-rotate(icon, href='/a', slot='activator')
               v-icon(color='grey') settings
             span {{$t('common:header.admin')}}
@@ -122,6 +216,8 @@ import { get, sync } from 'vuex-pathify'
 import _ from 'lodash'
 import Cookies from 'js-cookie'
 
+/* global siteLangs */
+
 export default {
   components: {
     PageDelete: () => import('./page-delete.vue')
@@ -143,11 +239,7 @@ export default {
       searchAdvMenuShown: false,
       newPageModal: false,
       deletePageModal: false,
-      locales: [
-        { code: 'en', name: 'English' },
-        { code: 'fr', name: 'Français' },
-        { code: 'es', name: 'Español' }
-      ]
+      locales: siteLangs
     }
   },
   computed: {
@@ -159,6 +251,7 @@ export default {
     isLoading: get('isLoading'),
     title: get('site/title'),
     path: get('page/path'),
+    locale: get('page/locale'),
     mode: get('page/mode'),
     name: get('user/name'),
     email: get('user/email'),
@@ -224,19 +317,19 @@ export default {
       this.newPageModal = true
     },
     pageNewCreate ({ path, locale }) {
-      window.location.assign(`/e/${path}`)
+      window.location.assign(`/e/${locale}/${path}`)
     },
     pageView () {
-      window.location.assign(`/${this.path}`)
+      window.location.assign(`/${this.locale}/${this.path}`)
     },
     pageEdit () {
-      window.location.assign(`/e/${this.path}`)
+      window.location.assign(`/e/${this.locale}/${this.path}`)
     },
     pageHistory () {
-      window.location.assign(`/h/${this.path}`)
+      window.location.assign(`/h/${this.locale}/${this.path}`)
     },
     pageSource () {
-      window.location.assign(`/s/${this.path}`)
+      window.location.assign(`/s/${this.locale}/${this.path}`)
     },
     pageMove () {
       this.$store.commit('showNotification', {

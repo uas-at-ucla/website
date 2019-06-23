@@ -63,7 +63,7 @@
           v-toolbar(:color='darkMode ? `grey darken-4-l3` : `grey lighten-4`', flat, :height='40')
             v-spacer
             v-tooltip(left)
-              v-btn.btn-animate-edit(icon, slot='activator', :href='"/e/" + path')
+              v-btn.btn-animate-edit(icon, slot='activator', :href='"/e/" + locale + "/" + path')
                 v-icon(color='grey') edit
               span {{$t('common:page.editPage')}}
           v-divider
