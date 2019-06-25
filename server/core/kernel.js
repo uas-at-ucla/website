@@ -31,7 +31,6 @@ module.exports = {
    */
   async preBootMaster() {
     try {
-      await this.initTelemetry()
       WIKI.cache = require('./cache').init()
       WIKI.scheduler = require('./scheduler').init()
       WIKI.sideloader = require('./sideloader').init()
@@ -75,19 +74,4 @@ module.exports = {
     await WIKI.models.storage.initTargets()
     WIKI.scheduler.start()
   },
-  /**
-   * Init Telemetry
-   */
-  async initTelemetry() {
-    require('./telemetry').init()
-
-    process.on('unhandledRejection', (err) => {
-      WIKI.logger.warn(err)
-      WIKI.telemetry.sendError(err)
-    })
-    process.on('uncaughtException', (err) => {
-      WIKI.logger.warn(err)
-      WIKI.telemetry.sendError(err)
-    })
-  }
 }
