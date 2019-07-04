@@ -4,9 +4,9 @@
     interval="3000"
     width="100%"
     height="65vh" >
-    <v-carousel-item src="/img/front_page_carousel/squad.jpg" />
-    <v-carousel-item src="/img/front_page_carousel/auvsi_group_photo.jpg" />
+    <!-- <v-carousel-item src="/img/front_page_carousel/squad.jpg" /> -->
     <v-carousel-item src="/img/front_page_carousel/spinny_grad_photo.jpg" />
+    <v-carousel-item src="/img/front_page_carousel/auvsi_group_photo.jpg" />
     <v-carousel-item src="/img/front_page_carousel/rc_controller.jpg" />
     <v-carousel-item src="/img/front_page_carousel/spinny_flying.jpg" />
     <v-carousel-item src="/img/front_page_carousel/prop_closeup.jpg" />
