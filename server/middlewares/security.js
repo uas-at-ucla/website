@@ -13,7 +13,7 @@ module.exports = function (req, res, next) {
   req.app.disable('x-powered-by')
 
   // -> Disable Frame Embedding
-  res.set('X-Frame-Options', 'deny')
+  res.set('X-Frame-Options', 'allow')
 
   // -> Re-enable XSS Fitler if disabled
   res.set('X-XSS-Protection', '1; mode=block')
