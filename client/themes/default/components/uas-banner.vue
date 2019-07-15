@@ -10,7 +10,6 @@
     <v-carousel-item src="/img/front_page_carousel/rc_controller.jpg" />
     <v-carousel-item src="/img/front_page_carousel/spinny_flying.jpg" />
     <v-carousel-item src="/img/front_page_carousel/prop_closeup.jpg" />
-    <v-carousel-item src="/img/front_page_carousel/software_workshop.jpg" />
     <v-carousel-item src="/img/front_page_carousel/sony_camera.jpg" />
     <v-carousel-item src="/img/front_page_carousel/flappy.jpg" />
     <v-carousel-item src="/img/front_page_carousel/spinny_portrait.jpg" />
