@@ -50,9 +50,15 @@
           template(v-if='hasPermission(`manage:system`)')
             v-divider.my-2
             v-subheader.pl-4 {{ $t('admin:nav.modules') }}
+            v-list-tile(to='/analytics')
+              v-list-tile-avatar: v-icon timeline
+              v-list-tile-title {{ $t('admin:analytics.title') }}
             v-list-tile(to='/auth')
               v-list-tile-avatar: v-icon lock_outline
               v-list-tile-title {{ $t('admin:auth.title') }}
+            v-list-tile(to='/comments', disabled)
+              v-list-tile-avatar: v-icon(color='grey lighten-2') comment
+              v-list-tile-title {{ $t('admin:comments.title') }}
             v-list-tile(to='/editor', disabled)
               v-list-tile-avatar: v-icon(color='grey lighten-2') transform
               v-list-tile-title {{ $t('admin:editor.title') }}
@@ -80,8 +86,8 @@
             v-list-tile(to='/system', v-if='hasPermission(`manage:system`)')
               v-list-tile-avatar: v-icon tune
               v-list-tile-title {{ $t('admin:system.title') }}
-            v-list-tile(to='/utilities', v-if='hasPermission(`manage:system`)', disabled)
-              v-list-tile-avatar: v-icon(color='grey lighten-2') build
+            v-list-tile(to='/utilities', v-if='hasPermission(`manage:system`)')
+              v-list-tile-avatar: v-icon build
               v-list-tile-title {{ $t('admin:utilities.title') }}
             v-list-tile(to='/webhooks', v-if='hasPermission(`manage:system`)', disabled)
               v-list-tile-avatar: v-icon(color='grey lighten-2') ac_unit
@@ -138,11 +144,13 @@ const router = new VueRouter({
     { path: '/locale', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-locale.vue') },
     { path: '/navigation', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-navigation.vue') },
     { path: '/pages', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-pages.vue') },
+    { path: '/pages/:id', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-pages-edit.vue') },
     { path: '/theme', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-theme.vue') },
     { path: '/groups', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-groups.vue') },
     { path: '/groups/:id', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-groups-edit.vue') },
     { path: '/users', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-users.vue') },
     { path: '/users/:id', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-users-edit.vue') },
+    { path: '/analytics', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-analytics.vue') },
     { path: '/auth', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-auth.vue') },
     { path: '/rendering', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-rendering.vue') },
     { path: '/editor', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-editor.vue') },

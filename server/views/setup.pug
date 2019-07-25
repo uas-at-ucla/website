@@ -7,47 +7,47 @@ html
     meta(name='theme-color', content='#333333')
     meta(name='msapplication-TileColor', content='#333333')
     title Wiki.js Setup
-    
+
     link(rel='manifest', href='/manifest.json')
-    
+
     //- Site Lang
     script.
       var siteConfig = !{JSON.stringify({ title: config.title })}
-    
+
     //- CSS
-
-
+    
+      
     link(
       type='text/css'
       rel='stylesheet'
-      href='/css/setup.3b1ac364833c05db92a5.css'
-      integrity='sha256-36WhXiOwmHn0Lt9kwGCwy+xb3eiOPGa4mBAJU5lVV1s= sha512-ymIV716zMR+nmbBGWeFjXnBkH/GEQoL07Sup4ISvVDVf59PE3aiJmQaFfBnVH2itb+T96SCo81WQ/pYYftwNdw=='
+      href='/css/setup.bacc384fc43b641ff776.css'
+      integrity='sha256-pV78xR83aPwqzXY+x3heZWlzDlXOVi5WABpNg4OF4WM= sha512-Dm8gc7VL01wh9psotD3YRixIZdpJA4moL70rWFXrHRyacmimlBnLRhn+wbwYSEUTV7+r8apqDI8G40rcVWTs9A=='
       crossorigin='use-credentials'
     )
-
-
+      
     
+
     //- JS
-
-
-    script(
-      type='text/javascript'
-      src='/js/runtime.deaa475df473dafce3cc.js'
-      integrity='sha256-u1K9Ce5gRjUzyWlp+0oS07eW7jUZSOzj02ukO1I7yeM= sha512-tjOS8V4MkmboJxMLOa9znyEbeQaQzoul+BQhBGPoDeX0NTUCQIN78b53D+AJg3T8wNZnKH6TCYzlNWECpUr2tg=='
-      crossorigin='use-credentials'
-      )
-
-
-
-    script(
-      type='text/javascript'
-      src='/js/setup.3b1ac364833c05db92a5.js'
-      integrity='sha256-3woCSZVFWhOOW4XmsUI6Dcglbqc70CfDvZC9lidVZ04= sha512-0TvP9I3Vi9hWDSA3Iokugp14vtHTc9Kyja/50IPhInS8LOvU+j49WyAhQP7+oEAu5bAne3VP69t4O02P4EXdUw=='
-      crossorigin='use-credentials'
-      )
-
-
     
+      
+    script(
+      type='text/javascript'
+      src='/js/runtime.fb64d0d04872e8d30673.js'
+      integrity='sha256-eEMRalq1Vs9u9nxEk0nun5tdrr0QUaj5Y+VAl6FF7oQ= sha512-Ss4HWIHQeGTXwPM+G/4jJEGNCGSrgWVYfHPVhf9fqxp5lgeu04UmnS88foEqDyITbdPuqixa+xnE58Jp0q45/g=='
+      crossorigin='use-credentials'
+      )
+      
+    
+      
+    script(
+      type='text/javascript'
+      src='/js/setup.bacc384fc43b641ff776.js'
+      integrity='sha256-oZKycSuXt3qdS1HWY8flTtokf7Ns2/QPDXD/08GbIKY= sha512-p5zYzWkn7zPBPy6dvoCJ1yLDZBKDHvnz2eK8+tuX2nO9NAXVKBcUEX52mY/b0UuEZ6jfllWAiM277Oi1kzuGvQ=='
+      crossorigin='use-credentials'
+      )
+      
+    
+
   body
     #root
       setup(telemetry-id=telemetryClientID, wiki-version=packageObj.version)

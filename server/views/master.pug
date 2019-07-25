@@ -6,9 +6,9 @@ html
     meta(name='viewport', content='user-scalable=yes, width=device-width, initial-scale=1, maximum-scale=5')
     meta(name='theme-color', content='#333333')
     meta(name='msapplication-TileColor', content='#333333')
-    
+
     title= pageMeta.title + ' | ' + config.title
-    
+
     //- SEO / OpenGraph
     meta(name='description', content=pageMeta.description)
     meta(property='og:title', content=pageMeta.title)
@@ -17,48 +17,72 @@ html
     meta(property='og:image', content=pageMeta.image)
     meta(property='og:url', content=pageMeta.url)
     meta(property='og:site_name', content=config.title)
-    
+
     link(rel='manifest', href='/manifest.json')
-    
+
     //- Site Properties
     script.
       var siteConfig = !{JSON.stringify(siteConfig)}; var siteLangs = !{JSON.stringify(langs)}
-    
+
+    //- Icon Set
+    if config.theming.iconset === 'mdi'
+      link(
+        type='text/css'
+        rel='stylesheet'
+        href='https://cdn.materialdesignicons.com/3.7.95/css/materialdesignicons.min.css'
+        )
+    else if config.theming.iconset === 'fa'
+      link(
+        type='text/css'
+        rel='stylesheet'
+        href='https://use.fontawesome.com/releases/v5.9.0/css/all.css'
+        )
+    else if config.theming.iconset === 'fa4'
+      link(
+        type='text/css'
+        rel='stylesheet'
+        href='https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css'
+        )
+
     //- CSS
-
-
+    
+      
     link(
       type='text/css'
       rel='stylesheet'
-      href='/css/app.fa87081e51cba0101a68.css'
-      integrity='sha256-E57W5cFCZWLF0pe5yJjKAUeihdOfUhEyHjO2+OWotIY= sha512-ctQn8LU0iypYIm2TH5JBb1OsD8G+BJ/dYpHUwRy176camNDNcBBC0n6Efcy5VflFqFuv6Nld7gnZ1g3xlMrFIQ=='
+      href='/css/app.c93f8daaf1113be32f88.css'
+      integrity='sha256-ygsuc6X5ETevSeW9qwaXuH9ykQSrtrk7tDsEL/ZYP8w= sha512-2fH8FTk00QSl/LInRURyiYV8+UkjeEmdRApMp/jmClFyBt70L2IUlepNFOF3S8CKGScK+jkQa3jDtBcL9WTxgg=='
       crossorigin='use-credentials'
     )
-
-
+      
     
+
     //- JS
-
-
-    script(
-      type='text/javascript'
-      src='/js/runtime.deaa475df473dafce3cc.js'
-      integrity='sha256-u1K9Ce5gRjUzyWlp+0oS07eW7jUZSOzj02ukO1I7yeM= sha512-tjOS8V4MkmboJxMLOa9znyEbeQaQzoul+BQhBGPoDeX0NTUCQIN78b53D+AJg3T8wNZnKH6TCYzlNWECpUr2tg=='
-      crossorigin='use-credentials'
-      )
-
-
-
-    script(
-      type='text/javascript'
-      src='/js/app.fa87081e51cba0101a68.js'
-      integrity='sha256-wPn9Usiu2tP3lEwQpTY8Lsh7vpgh7+dq2NBBYfC0p+0= sha512-TGT1bFxYCX+Wyfwujqx1/A+Hhj8E905U5Uah1jPSMy+X3RRFL8cgvDd6+uRLBT3GhhJfCakGybnVItDYpMMe5g=='
-      crossorigin='use-credentials'
-      )
-
-
     
+      
+    script(
+      type='text/javascript'
+      src='/js/runtime.fb64d0d04872e8d30673.js'
+      integrity='sha256-eEMRalq1Vs9u9nxEk0nun5tdrr0QUaj5Y+VAl6FF7oQ= sha512-Ss4HWIHQeGTXwPM+G/4jJEGNCGSrgWVYfHPVhf9fqxp5lgeu04UmnS88foEqDyITbdPuqixa+xnE58Jp0q45/g=='
+      crossorigin='use-credentials'
+      )
+      
+    
+      
+    script(
+      type='text/javascript'
+      src='/js/app.c93f8daaf1113be32f88.js'
+      integrity='sha256-bN6HsbeBJKblWNuW7Ku/hRgdtdnwx4E2GNon5c9pzVA= sha512-W30fCz/G2aELzDBpkfHE7hjQmNSME9hMJWbajgk9f2XA+wYKh7R4StNCfPva+ISDAzuWPi3lz8HQLTup50zU0g=='
+      crossorigin='use-credentials'
+      )
+      
+    
+
+    != analyticsCode.head
+
     block head
-    
+
   body
+    != analyticsCode.bodyStart
     block body
+    != analyticsCode.bodyEnd

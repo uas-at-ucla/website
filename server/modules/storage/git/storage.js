@@ -104,6 +104,18 @@ module.exports = {
     switch (this.config.authType) {
       case 'ssh':
         WIKI.logger.info('(STORAGE/GIT) Setting SSH Command config...')
+        if (this.config.sshPrivateKeyMode === 'contents') {
+          try {
+            this.config.sshPrivateKeyPath = path.join(WIKI.ROOTPATH, 'data/secure/git-ssh.pem')
+            await fs.outputFile(this.config.sshPrivateKeyPath, this.config.sshPrivateKeyContent, {
+              encoding: 'utf8',
+              mode: 0o600
+            })
+          } catch (err) {
+            console.error(err)
+            throw err
+          }
+        }
         await this.git.addConfig('core.sshCommand', `ssh -i "${this.config.sshPrivateKeyPath}" -o StrictHostKeyChecking=no`)
         WIKI.logger.info('(STORAGE/GIT) Adding origin remote via SSH...')
         await this.git.addRemote('origin', this.config.repoUrl)
@@ -244,7 +256,10 @@ module.exports = {
    */
   async created(page) {
     WIKI.logger.info(`(STORAGE/GIT) Committing new file ${page.path}...`)
-    const fileName = `${page.path}.${getFileExtension(page.contentType)}`
+    let fileName = `${page.path}.${getFileExtension(page.contentType)}`
+    if (WIKI.config.lang.namespacing && WIKI.config.lang.code !== page.localeCode) {
+      fileName = `${page.localeCode}/${fileName}`
+    }
     const filePath = path.join(this.repoPath, fileName)
     await fs.outputFile(filePath, page.injectMetadata(), 'utf8')
 
@@ -260,7 +275,10 @@ module.exports = {
    */
   async updated(page) {
     WIKI.logger.info(`(STORAGE/GIT) Committing updated file ${page.path}...`)
-    const fileName = `${page.path}.${getFileExtension(page.contentType)}`
+    let fileName = `${page.path}.${getFileExtension(page.contentType)}`
+    if (WIKI.config.lang.namespacing && WIKI.config.lang.code !== page.localeCode) {
+      fileName = `${page.localeCode}/${fileName}`
+    }
     const filePath = path.join(this.repoPath, fileName)
     await fs.outputFile(filePath, page.injectMetadata(), 'utf8')
 
@@ -276,7 +294,10 @@ module.exports = {
    */
   async deleted(page) {
     WIKI.logger.info(`(STORAGE/GIT) Committing removed file ${page.path}...`)
-    const fileName = `${page.path}.${getFileExtension(page.contentType)}`
+    let fileName = `${page.path}.${getFileExtension(page.contentType)}`
+    if (WIKI.config.lang.namespacing && WIKI.config.lang.code !== page.localeCode) {
+      fileName = `${page.localeCode}/${fileName}`
+    }
 
     await this.git.rm(`./${fileName}`)
     await this.git.commit(`docs: delete ${page.path}`, fileName, {
@@ -290,8 +311,13 @@ module.exports = {
    */
   async renamed(page) {
     WIKI.logger.info(`(STORAGE/GIT) Committing file move from ${page.sourcePath} to ${page.destinationPath}...`)
-    const sourceFilePath = `${page.sourcePath}.${getFileExtension(page.contentType)}`
-    const destinationFilePath = `${page.destinationPath}.${getFileExtension(page.contentType)}`
+    let sourceFilePath = `${page.sourcePath}.${getFileExtension(page.contentType)}`
+    let destinationFilePath = `${page.destinationPath}.${getFileExtension(page.contentType)}`
+
+    if (WIKI.config.lang.namespacing && WIKI.config.lang.code !== page.localeCode) {
+      sourceFilePath = `${page.localeCode}/${sourceFilePath}`
+      destinationFilePath = `${page.localeCode}/${destinationFilePath}`
+    }
 
     await this.git.mv(`./${sourceFilePath}`, `./${destinationFilePath}`)
     await this.git.commit(`docs: rename ${page.sourcePath} to ${destinationFilePath}`, destinationFilePath, {
@@ -337,7 +363,10 @@ module.exports = {
       new stream.Transform({
         objectMode: true,
         transform: async (page, enc, cb) => {
-          const fileName = `${page.path}.${getFileExtension(page.contentType)}`
+          let fileName = `${page.path}.${getFileExtension(page.contentType)}`
+          if (WIKI.config.lang.namespacing && WIKI.config.lang.code !== page.localeCode) {
+            fileName = `${page.localeCode}/${fileName}`
+          }
           WIKI.logger.info(`(STORAGE/GIT) Adding ${fileName}...`)
           const filePath = path.join(this.repoPath, fileName)
           await fs.outputFile(filePath, pageHelper.injectPageMetadata(page), 'utf8')

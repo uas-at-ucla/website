@@ -177,6 +177,11 @@ module.exports = class Page extends Model {
   }
 
   static async createPage(opts) {
+    const dupCheck = await WIKI.models.pages.query().select('id').where('localeCode', opts.locale).where('path', opts.path).first()
+    if (dupCheck) {
+      throw new WIKI.Error.PageDuplicateCreate()
+    }
+
     await WIKI.models.pages.query().insert({
       authorId: opts.authorId,
       content: opts.content,
@@ -306,11 +311,20 @@ module.exports = class Page extends Model {
   }
 
   static async getPage(opts) {
+    // -> Get from cache first
     let page = await WIKI.models.pages.getPageFromCache(opts)
     if (!page) {
+      // -> Get from DB
       page = await WIKI.models.pages.getPageFromDb(opts)
       if (page) {
-        await WIKI.models.pages.savePageToCache(page)
+        if (page.render) {
+          // -> Save render to cache
+          await WIKI.models.pages.savePageToCache(page)
+        } else {
+          // -> No render? Possible duplicate issue
+          /* TODO: Detect duplicate and delete */
+          throw new Error('Error while fetching page. Duplicate entry detected. Reload the page to try again.')
+        }
       }
     }
     return page
@@ -336,23 +350,23 @@ module.exports = class Page extends Model {
         'pages.path': opts.path,
         'pages.localeCode': opts.locale
       })
-      .andWhere(builder => {
-        if (queryModeID) return
-        builder.where({
-          'pages.isPublished': true
-        }).orWhere({
-          'pages.isPublished': false,
-          'pages.authorId': opts.userId
-        })
-      })
-      .andWhere(builder => {
-        if (queryModeID) return
-        if (opts.isPrivate) {
-          builder.where({ 'pages.isPrivate': true, 'pages.privateNS': opts.privateNS })
-        } else {
-          builder.where({ 'pages.isPrivate': false })
-        }
-      })
+      // .andWhere(builder => {
+      //   if (queryModeID) return
+      //   builder.where({
+      //     'pages.isPublished': true
+      //   }).orWhere({
+      //     'pages.isPublished': false,
+      //     'pages.authorId': opts.userId
+      //   })
+      // })
+      // .andWhere(builder => {
+      //   if (queryModeID) return
+      //   if (opts.isPrivate) {
+      //     builder.where({ 'pages.isPrivate': true, 'pages.privateNS': opts.privateNS })
+      //   } else {
+      //     builder.where({ 'pages.isPrivate': false })
+      //   }
+      // })
       .first()
   }
 
@@ -401,6 +415,23 @@ module.exports = class Page extends Model {
 
   static async deletePageFromCache(page) {
     return fs.remove(path.join(process.cwd(), `data/cache/${page.hash}.bin`))
+  }
+
+  static async flushCache() {
+    return fs.emptyDir(path.join(process.cwd(), `data/cache`))
+  }
+
+  static async migrateToLocale({ sourceLocale, targetLocale }) {
+    return WIKI.models.pages.query()
+      .patch({
+        localeCode: targetLocale
+      })
+      .where({
+        localeCode: sourceLocale
+      })
+      .whereNotExists(function() {
+        this.select('id').from('pages AS pagesm').where('pagesm.localeCode', targetLocale).andWhereRaw('pagesm.path = pages.path')
+      })
   }
 
   static cleanHTML(rawHTML = '') {

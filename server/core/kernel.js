@@ -62,6 +62,7 @@ module.exports = {
    * Post-Master Boot Sequence
    */
   async postBootMaster() {
+    await WIKI.models.analytics.refreshProvidersFromDisk()
     await WIKI.models.authentication.refreshStrategiesFromDisk()
     await WIKI.models.editors.refreshEditorsFromDisk()
     await WIKI.models.loggers.refreshLoggersFromDisk()

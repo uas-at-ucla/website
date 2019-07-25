@@ -117,6 +117,18 @@ module.exports = {
     message: 'Mail template failed to load.',
     code: 3003
   }),
+  PageGenericError: CustomError('PageGenericError', {
+    message: 'An unexpected error occured during a page operation.',
+    code: 6001
+  }),
+  PageDuplicateCreate: CustomError('PageDuplicateCreate', {
+    message: 'Cannot create this page because an entry already exists at the same path.',
+    code: 6002
+  }),
+  PageNotFound: CustomError('PageNotFound', {
+    message: 'This page does not exist.',
+    code: 6003
+  }),
   SearchActivationFailed: CustomError('SearchActivationFailed', {
     message: 'Search Engine activation failed.',
     code: 4002

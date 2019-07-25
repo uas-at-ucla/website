@@ -104,6 +104,7 @@ module.exports = async () => {
   // View accessible data
   // ----------------------------------------
 
+  app.locals.analyticsCode = {}
   app.locals.basedir = WIKI.ROOTPATH
   app.locals.config = WIKI.config
   app.locals.pageMeta = {
@@ -153,6 +154,7 @@ module.exports = async () => {
       company: WIKI.config.company
     }
     res.locals.langs = await WIKI.models.locales.getNavLocales({ cache: true })
+    res.locals.analyticsCode = await WIKI.models.analytics.getCode({ cache: true })
     next()
   })
 

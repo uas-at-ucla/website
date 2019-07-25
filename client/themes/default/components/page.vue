@@ -87,7 +87,7 @@
 
 <script>
 import { StatusIndicator } from 'vue-status-indicator'
-import Prism from '@/libs/prism/prism.js'
+import Prism from 'prismjs'
 import { get } from 'vuex-pathify'
 import _ from 'lodash'
 import UasBanner from './uas-banner.vue'
@@ -179,6 +179,7 @@ export default {
   },
   computed: {
     darkMode: get('site/dark'),
+    isAuthenticated: get('user/authenticated'),
     rating: {
       get () {
         return 3.5

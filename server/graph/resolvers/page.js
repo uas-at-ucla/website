@@ -42,6 +42,18 @@ module.exports = {
         'createdAt',
         'updatedAt'
       ])
+    },
+    async single (obj, args, context, info) {
+      let page = await WIKI.models.pages.getPageFromDb(args.id)
+      if (page) {
+        return {
+          ...page,
+          locale: page.localeCode,
+          editor: page.editorKey
+        }
+      } else {
+        throw new WIKI.Error.PageNotFound()
+      }
     }
   },
   PageMutation: {
@@ -72,6 +84,27 @@ module.exports = {
       return {
         responseResult: graphHelper.generateSuccess('Page has been updated.'),
         page
+      }
+    },
+    async flushCache(obj, args, context) {
+      try {
+        await WIKI.models.pages.flushCache()
+        return {
+          responseResult: graphHelper.generateSuccess('Pages Cache has been flushed successfully.')
+        }
+      } catch (err) {
+        return graphHelper.generateError(err)
+      }
+    },
+    async migrateToLocale(obj, args, context) {
+      try {
+        const count = await WIKI.models.pages.migrateToLocale(args)
+        return {
+          responseResult: graphHelper.generateSuccess('Migrated content to target locale successfully.'),
+          count
+        }
+      } catch (err) {
+        return graphHelper.generateError(err)
       }
     }
   },
