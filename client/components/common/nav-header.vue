@@ -21,17 +21,26 @@
       v-flex(grow)
         v-toolbar.nav-header-inner(color='#111', dark, flat)
           a(href='/')
-            v-img(v-if="!$vuetify.breakpoint.smAndDown" src="/img/uas_logo.png", width="300px")
-            v-img(v-if="$vuetify.breakpoint.smAndDown" src="/img/uas_logo_compact.png", width="50px")
-          v-btn(@click='goToLink("/sponsors")', flat, :icon="$vuetify.breakpoint.smAndDown ? true : false")
-            v-icon(color='grey') attach_money
-            span(class="grey--text", style="margin-left: 5px", v-if="!$vuetify.breakpoint.smAndDown") {{"Sponsors"}}
-          v-btn(@click='goToLink("/calendar")', flat, :icon="$vuetify.breakpoint.smAndDown ? true : false")
-            v-icon(color='grey') calendar_today
-            span(class="grey--text", style="margin-left: 5px", v-if="!$vuetify.breakpoint.smAndDown") {{"Calendar"}}
-          v-btn(@click='goToLink("/join")', flat, :icon="$vuetify.breakpoint.smAndDown ? true : false")
+            v-img(v-if="!$vuetify.breakpoint.mdAndDown" src="/img/uas_logo.png", width="300px")
+            v-img(v-if="$vuetify.breakpoint.mdAndDown" src="/img/uas_logo_compact.png", width="50px")
+          v-btn(@click='goToLink("/join")', flat, :icon="$vuetify.breakpoint.mdAndDown ? true : false")
             v-icon(color='grey') group_add
-            span(class="grey--text", style="margin-left: 5px", v-if="!$vuetify.breakpoint.smAndDown") {{"How To Join"}}
+            span(class="grey--text", style="margin-left: 5px", v-if="!$vuetify.breakpoint.mdAndDown") {{"How To Join"}}
+          v-btn(@click='goToLink("/members")', flat, :icon="$vuetify.breakpoint.mdAndDown ? true : false")
+            v-icon(color='grey') group
+            span(class="grey--text", style="margin-left: 5px", v-if="!$vuetify.breakpoint.mdAndDown") {{"Members"}}
+          v-btn(@click='goToLink("/sponsors")', flat, :icon="$vuetify.breakpoint.mdAndDown ? true : false")
+            v-icon(color='grey') attach_money
+            span(class="grey--text", style="margin-left: 5px", v-if="!$vuetify.breakpoint.mdAndDown") {{"Sponsors"}}
+          v-btn(@click='goToLink("/docs")', flat, :icon="$vuetify.breakpoint.mdAndDown ? true : false")
+            v-icon(color='grey') library_books
+            span(class="grey--text", style="margin-left: 5px", v-if="!$vuetify.breakpoint.mdAndDown") {{"Documentation"}}
+          v-btn(@click='goToLink("/calendar")', flat, :icon="$vuetify.breakpoint.mdAndDown ? true : false")
+            v-icon(color='grey') calendar_today
+            span(class="grey--text", style="margin-left: 5px", v-if="!$vuetify.breakpoint.mdAndDown") {{"Calendar"}}
+          v-btn(@click='goToLink("/#contact-us")', flat, :icon="$vuetify.breakpoint.mdAndDown ? true : false")
+            v-icon(color='grey') email
+            span(class="grey--text", style="margin-left: 5px", v-if="!$vuetify.breakpoint.mdAndDown") {{"Contact Us"}}
 
       v-flex.right-menu(shrink)
         v-toolbar.nav-header-inner(color='#111', dark, flat)

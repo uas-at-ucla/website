@@ -1,19 +1,20 @@
 <template lang="pug">
   v-app(v-scroll='upBtnScroll', :dark='darkMode')
     nav-header
-    v-navigation-drawer(
-      :class='darkMode ? `grey darken-5` : `primary`'
-      dark
-      app
-      clipped
-      mobile-break-point='600'
-      :temporary='$vuetify.breakpoint.mdAndDown'
-      v-model='navShown'
-      :right='$vuetify.rtl'
-      )
-      vue-scroll(:ops='scrollStyle')
-        nav-sidebar(:color='darkMode ? `grey darken-5` : `primary`')
-          slot(name='sidebar')
+    //-
+      v-navigation-drawer(
+        :class='darkMode ? `grey darken-5` : `primary`'
+        dark
+        app
+        clipped
+        mobile-break-point='600'
+        :temporary='$vuetify.breakpoint.mdAndDown'
+        v-model='navShown'
+        :right='$vuetify.rtl'
+        )
+        vue-scroll(:ops='scrollStyle')
+          nav-sidebar(:color='darkMode ? `grey darken-5` : `primary`')
+            slot(name='sidebar')
 
     v-fab-transition
       v-btn(
@@ -54,7 +55,7 @@
           v-toolbar(:color='darkMode ? `grey darken-4-l3` : `grey lighten-4`', flat, :height='40')
             div
               .headline.grey--text(:class='darkMode ? `text--lighten-2` : `text--darken-3`') {{title}}
-              .caption.grey--text.text--darken-1 {{description}}
+              //- .caption.grey--text.text--darken-1 {{description}}
           v-divider
           .contents(ref='container')
             slot(name='contents')
