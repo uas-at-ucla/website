@@ -16,20 +16,20 @@
           nav-sidebar(:color='darkMode ? `grey darken-5` : `primary`')
             slot(name='sidebar')
 
-    v-fab-transition
-      v-btn(
-        fab
-        color='primary'
-        fixed
-        bottom
-        :right='$vuetify.rtl'
-        :left='!$vuetify.rtl'
-        small
-        @click='navShown = !navShown'
-        v-if='$vuetify.breakpoint.mdAndDown'
-        v-show='!navShown'
-        )
-        v-icon menu
+      v-fab-transition
+        v-btn(
+          fab
+          color='primary'
+          fixed
+          bottom
+          :right='$vuetify.rtl'
+          :left='!$vuetify.rtl'
+          small
+          @click='navShown = !navShown'
+          v-if='$vuetify.breakpoint.mdAndDown'
+          v-show='!navShown'
+          )
+          v-icon menu
 
     v-content(ref='content')
       UasBanner(v-if='path === `home`')
@@ -50,7 +50,12 @@
             .caption.red--text {{$t('common:page.unpublished')}}
             status-indicator.ml-3(negative, pulse)
         v-divider
-      v-layout(row)
+      v-layout(row justify-center)
+        v-flex(lg3, xl2, fill-height, v-if='$vuetify.breakpoint.lgAndUp')
+          v-toolbar(:color='darkMode ? `grey darken-4-l3` : `grey lighten-4`', flat, :height='40')
+            v-spacer
+          v-divider
+
         v-flex(xs12, lg9, xl10)
           v-toolbar(:color='darkMode ? `grey darken-4-l3` : `grey lighten-4`', flat, :height='40')
             div
