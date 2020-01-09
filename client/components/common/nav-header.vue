@@ -23,16 +23,39 @@
           a(href='/')
             v-img(v-if="!$vuetify.breakpoint.smAndDown" src="/img/uas_logo.png", width="300px")
             v-img(v-if="$vuetify.breakpoint.smAndDown" src="/img/uas_logo_compact.png", width="50px")
-          v-btn(@click='goToLink("/join")', flat)
-            span(class="grey--text") {{"Joining"}}
-          v-btn(@click='goToLink("/members")', flat)
-            span(class="grey--text") {{"Members"}}
-          v-btn(@click='goToLink("/sponsors")', flat)
-            span(class="grey--text") {{"Sponsors"}}
-          v-btn(@click='goToLink("/calendar")', flat)
-            span(class="grey--text") {{"Calendar"}}
-          v-btn(@click='goToLink("/docs")', flat)
-            span(class="grey--text") {{"Docs"}}
+          span.hidden-sm-and-down
+            v-btn(@click='goToLink("/join")', flat)
+              span(class="grey--text") {{"Joining"}}
+            v-btn(@click='goToLink("/members")', flat)
+              span(class="grey--text") {{"Members"}}
+            v-btn(@click='goToLink("/sponsors")', flat)
+              span(class="grey--text") {{"Sponsors"}}
+            v-btn(@click='goToLink("/calendar")', flat)
+              span(class="grey--text") {{"Calendar"}}
+            v-btn(@click='goToLink("/docs")', flat)
+              span(class="grey--text") {{"Docs"}}
+            v-btn(@click='goToLink("/private")', flat, v-if='isAuthenticated')
+              span(class="grey--text") {{"Internal"}}
+          v-menu.hidden-md-and-up(open-on-hover, offset-y, bottom, right, min-width='250', transition='slide-y-transition')
+            v-toolbar-side-icon(slot="activator", class="grey--text")
+            v-list
+              v-list-tile(href='/join')
+                v-list-tile-content.justify-center {{"Joining"}}
+              v-divider.my-0
+              v-list-tile(href='/members')
+                v-list-tile-content {{"Members"}}
+              v-divider.my-0
+              v-list-tile(href='/sponsors')
+                v-list-tile-content {{"Sponsors"}}
+              v-divider.my-0
+              v-list-tile(href='/calendar')
+                v-list-tile-content {{"Calendar"}}
+              v-divider.my-0
+              v-list-tile(href='/docs')
+                v-list-tile-content {{"Docs"}}
+              v-divider.my-0(v-if='isAuthenticated')
+              v-list-tile(href='/private', v-if='isAuthenticated')
+                v-list-tile-content {{"Internal"}}
 
       v-flex.right-menu(shrink)
         v-toolbar.nav-header-inner(color='#111', dark, flat)
@@ -46,7 +69,7 @@
             icon
             )
             v-icon(color='grey') search
-          v-menu(open-on-hover, offset-y, bottom, left, min-width='250', transition='slide-y-transition', v-if="!$vuetify.breakpoint.xsOnly")
+          v-menu(open-on-hover, offset-y, bottom, left, min-width='250', transition='slide-y-transition')
             v-toolbar-side-icon.btn-animate-app(slot='activator')
               v-icon(color='grey') view_module
             v-list(dense, :light='!$vuetify.dark', :dark='$vuetify.dark', :class='$vuetify.dark ? `grey darken-4` : ``').py-0
@@ -83,7 +106,7 @@
                 v-list-tile-avatar: v-icon(color='grey lighten-2') burst_mode
                 v-list-tile-content.grey--text.text--ligten-2 {{$t('common:header.imagesFiles')}}
 
-          v-tooltip(bottom, v-if='isAuthenticated && isAdmin && !$vuetify.breakpoint.xsOnly')
+          v-tooltip(bottom, v-if='isAuthenticated && isAdmin')
             v-btn.btn-animate-rotate(icon, href='/a', slot='activator')
               v-icon(color='grey') settings
             span {{$t('common:header.admin')}}
