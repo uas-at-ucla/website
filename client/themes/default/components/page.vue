@@ -139,7 +139,7 @@
                   span {{$t('common:page.printFormat')}}
                 v-spacer
 
-          v-flex.page-col-content(xs12, lg9, xl10)
+          v-flex.page-col-content(:xs12='path !== `home`', :lg9='path !== `home`', :xl10='path !== `home`')
             v-tooltip(:right='$vuetify.rtl', :left='!$vuetify.rtl', v-if='isAuthenticated')
               template(v-slot:activator='{ on: onEditActivator }')
                 v-speed-dial(

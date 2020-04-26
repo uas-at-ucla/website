@@ -28,10 +28,10 @@ span
           a(@click='goHome')
             v-img(v-if="!((!isAuthenticated && $vuetify.breakpoint.smAndDown) || (isAuthenticated && $vuetify.breakpoint.mdAndDown))" src="/img/uas_logo.png", width="300px")
             v-img(v-if="((!isAuthenticated && $vuetify.breakpoint.smAndDown) || (isAuthenticated && $vuetify.breakpoint.mdAndDown))" src="/img/uas_logo_compact.png", width="50px")
-          v-toolbar-items.hidden-sm-and-down.page-btns
+          v-toolbar-items.hidden-sm-and-down.page-btns(v-if='mode !== `edit`')
             v-btn(v-for='(page, index) in pages' :key='index' @click='goToLink(page.path)', v-if='!page.private || isAuthenticated', text)
               span(class="grey--text") {{page.title}}
-          v-app-bar-nav-icon.hidden-md-and-up(color='grey' @click='mobileNavOpen = !mobileNavOpen')
+          v-app-bar-nav-icon.hidden-md-and-up(v-if='mode !== `edit`' color='grey' @click='mobileNavOpen = !mobileNavOpen')
 
           //- v-menu(open-on-hover, offset-y, bottom, left, min-width='250', transition='slide-y-transition')
           //-   template(v-slot:activator='{ on }')
@@ -221,7 +221,7 @@ span
         .overline This code base is NOT for production use!
 
   transition(name='expand')
-    v-list.hidden-md-and-up(id='mobile-nav' v-if="mobileNavOpen" dark style='position: fixed; width: 100%; margin-top: 56px; margin-bottom: -56px; z-index: 100; border-radius: 0;')
+    v-list.hidden-md-and-up(id='mobile-nav' v-if='mode !== `edit` && mobileNavOpen' dark style='position: fixed; width: 100%; margin-top: 56px; margin-bottom: -56px; z-index: 100; border-radius: 0;')
       v-list-item-group
         v-list-item(@click='goHome')
           v-list-item-icon
