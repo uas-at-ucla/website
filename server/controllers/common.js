@@ -5,6 +5,8 @@ const _ = require('lodash')
 
 /* global WIKI */
 
+const tmplCreateRegex = /^[0-9]+(,[0-9]+)?$/
+
 /**
  * Robots.txt
  */
@@ -37,6 +39,49 @@ router.get(['/a', '/a/*'], (req, res, next) => {
 })
 
 /**
+ * Download Page / Version
+ */
+router.get(['/d', '/d/*'], async (req, res, next) => {
+  const pageArgs = pageHelper.parsePath(req.path, { stripExt: true })
+
+  const versionId = (req.query.v) ? _.toSafeInteger(req.query.v) : 0
+
+  const page = await WIKI.models.pages.getPageFromDb({
+    path: pageArgs.path,
+    locale: pageArgs.locale,
+    userId: req.user.id,
+    isPrivate: false
+  })
+
+  pageArgs.tags = _.get(page, 'tags', [])
+
+  if (versionId > 0) {
+    if (!WIKI.auth.checkAccess(req.user, ['read:history'], pageArgs)) {
+      _.set(res.locals, 'pageMeta.title', 'Unauthorized')
+      return res.render('unauthorized', { action: 'downloadVersion' })
+    }
+  } else {
+    if (!WIKI.auth.checkAccess(req.user, ['read:source'], pageArgs)) {
+      _.set(res.locals, 'pageMeta.title', 'Unauthorized')
+      return res.render('unauthorized', { action: 'download' })
+    }
+  }
+
+  if (page) {
+    const fileName = _.last(page.path.split('/')) + '.' + pageHelper.getFileExtension(page.contentType)
+    res.attachment(fileName)
+    if (versionId > 0) {
+      const pageVersion = await WIKI.models.pageHistory.getVersion({ pageId: page.id, versionId })
+      res.send(pageHelper.injectPageMetadata(pageVersion))
+    } else {
+      res.send(pageHelper.injectPageMetadata(page))
+    }
+  } else {
+    res.status(404).end()
+  }
+})
+
+/**
  * Create/Edit document
  */
 router.get(['/e', '/e/*'], async (req, res, next) => {
@@ -46,18 +91,24 @@ router.get(['/e', '/e/*'], async (req, res, next) => {
     return res.redirect(`/e/${pageArgs.locale}/${pageArgs.path}`)
   }
 
+  // -> Set Editor Lang
   _.set(res, 'locals.siteConfig.lang', pageArgs.locale)
+  _.set(res, 'locals.siteConfig.rtl', req.i18n.dir() === 'rtl')
 
+  // -> Check for reserved path
   if (pageHelper.isReservedPath(pageArgs.path)) {
     return next(new Error('Cannot create this page because it starts with a system reserved path.'))
   }
 
+  // -> Get page data from DB
   let page = await WIKI.models.pages.getPageFromDb({
     path: pageArgs.path,
     locale: pageArgs.locale,
     userId: req.user.id,
     isPrivate: false
   })
+
+  pageArgs.tags = _.get(page, 'tags', [])
 
   const injectCode = {
     css: WIKI.config.theming.injectCSS,
@@ -66,10 +117,15 @@ router.get(['/e', '/e/*'], async (req, res, next) => {
   }
 
   if (page) {
-    if (!WIKI.auth.checkAccess(req.user, ['manage:pages'], pageArgs)) {
+    // -> EDIT MODE
+    if (!WIKI.auth.checkAccess(req.user, ['write:pages', 'manage:pages'], pageArgs)) {
       _.set(res.locals, 'pageMeta.title', 'Unauthorized')
       return res.render('unauthorized', { action: 'edit' })
     }
+
+    // -> Get page tags
+    await page.$relatedQuery('tags')
+    page.tags = _.map(page.tags, 'tag')
 
     _.set(res.locals, 'pageMeta.title', `Edit ${page.title}`)
     _.set(res.locals, 'pageMeta.description', page.description)
@@ -77,6 +133,7 @@ router.get(['/e', '/e/*'], async (req, res, next) => {
     page.isPublished = (page.isPublished === true || page.isPublished === 1) ? 'true' : 'false'
     page.content = Buffer.from(page.content).toString('base64')
   } else {
+    // -> CREATE MODE
     if (!WIKI.auth.checkAccess(req.user, ['write:pages'], pageArgs)) {
       _.set(res.locals, 'pageMeta.title', 'Unauthorized')
       return res.render('unauthorized', { action: 'create' })
@@ -88,7 +145,55 @@ router.get(['/e', '/e/*'], async (req, res, next) => {
       localeCode: pageArgs.locale,
       editorKey: null,
       mode: 'create',
-      content: null
+      content: null,
+      title: null,
+      description: null,
+      updatedAt: new Date().toISOString()
+    }
+
+    // -> From Template
+    if (req.query.from && tmplCreateRegex.test(req.query.from)) {
+      let tmplPageId = 0
+      let tmplVersionId = 0
+      if (req.query.from.indexOf(',')) {
+        const q = req.query.from.split(',')
+        tmplPageId = _.toSafeInteger(q[0])
+        tmplVersionId = _.toSafeInteger(q[1])
+      } else {
+        tmplPageId = _.toSafeInteger(req.query.from)
+      }
+
+      if (tmplVersionId > 0) {
+        // -> From Page Version
+        const pageVersion = await WIKI.models.pageHistory.getVersion({ pageId: tmplPageId, versionId: tmplVersionId })
+        if (!pageVersion) {
+          _.set(res.locals, 'pageMeta.title', 'Page Not Found')
+          return res.status(404).render('notfound', { action: 'template' })
+        }
+        if (!WIKI.auth.checkAccess(req.user, ['read:history'], { path: pageVersion.path, locale: pageVersion.locale })) {
+          _.set(res.locals, 'pageMeta.title', 'Unauthorized')
+          return res.render('unauthorized', { action: 'sourceVersion' })
+        }
+        page.content = Buffer.from(pageVersion.content).toString('base64')
+        page.editorKey = pageVersion.editor
+        page.title = pageVersion.title
+        page.description = pageVersion.description
+      } else {
+        // -> From Page Live
+        const pageOriginal = await WIKI.models.pages.query().findById(tmplPageId)
+        if (!pageOriginal) {
+          _.set(res.locals, 'pageMeta.title', 'Page Not Found')
+          return res.status(404).render('notfound', { action: 'template' })
+        }
+        if (!WIKI.auth.checkAccess(req.user, ['read:source'], { path: pageOriginal.path, locale: pageOriginal.locale })) {
+          _.set(res.locals, 'pageMeta.title', 'Unauthorized')
+          return res.render('unauthorized', { action: 'source' })
+        }
+        page.content = Buffer.from(pageOriginal.content).toString('base64')
+        page.editorKey = pageOriginal.editorKey
+        page.title = pageOriginal.title
+        page.description = pageOriginal.description
+      }
     }
   }
   res.render('editor', { page, injectCode })
@@ -105,11 +210,7 @@ router.get(['/h', '/h/*'], async (req, res, next) => {
   }
 
   _.set(res, 'locals.siteConfig.lang', pageArgs.locale)
-
-  if (!WIKI.auth.checkAccess(req.user, ['read:pages'], pageArgs)) {
-    _.set(res.locals, 'pageMeta.title', 'Unauthorized')
-    return res.render('unauthorized', { action: 'history' })
-  }
+  _.set(res, 'locals.siteConfig.rtl', req.i18n.dir() === 'rtl')
 
   const page = await WIKI.models.pages.getPageFromDb({
     path: pageArgs.path,
@@ -117,12 +218,59 @@ router.get(['/h', '/h/*'], async (req, res, next) => {
     userId: req.user.id,
     isPrivate: false
   })
+
+  if (!page) {
+    _.set(res.locals, 'pageMeta.title', 'Page Not Found')
+    return res.status(404).render('notfound', { action: 'history' })
+  }
+
+  pageArgs.tags = _.get(page, 'tags', [])
+
+  if (!WIKI.auth.checkAccess(req.user, ['read:history'], pageArgs)) {
+    _.set(res.locals, 'pageMeta.title', 'Unauthorized')
+    return res.render('unauthorized', { action: 'history' })
+  }
+
   if (page) {
     _.set(res.locals, 'pageMeta.title', page.title)
     _.set(res.locals, 'pageMeta.description', page.description)
     res.render('history', { page })
   } else {
     res.redirect(`/${pageArgs.path}`)
+  }
+})
+
+/**
+ * Page ID redirection
+ */
+router.get(['/i', '/i/:id'], async (req, res, next) => {
+  const pageId = _.toSafeInteger(req.params.id)
+  if (pageId <= 0) {
+    return res.redirect('/')
+  }
+
+  const page = await WIKI.models.pages.query().column(['path', 'localeCode', 'isPrivate', 'privateNS']).findById(pageId)
+  if (!page) {
+    _.set(res.locals, 'pageMeta.title', 'Page Not Found')
+    return res.status(404).render('notfound', { action: 'view' })
+  }
+
+  if (!WIKI.auth.checkAccess(req.user, ['read:pages'], {
+    locale: page.localeCode,
+    path: page.path,
+    private: page.isPrivate,
+    privateNS: page.privateNS,
+    explicitLocale: false,
+    tags: page.tags
+  })) {
+    _.set(res.locals, 'pageMeta.title', 'Unauthorized')
+    return res.render('unauthorized', { action: 'view' })
+  }
+
+  if (WIKI.config.lang.namespacing) {
+    return res.redirect(`/${page.localeCode}/${page.path}`)
+  } else {
+    return res.redirect(`/${page.path}`)
   }
 })
 
@@ -139,16 +287,7 @@ router.get(['/p', '/p/*'], (req, res, next) => {
  */
 router.get(['/s', '/s/*'], async (req, res, next) => {
   const pageArgs = pageHelper.parsePath(req.path, { stripExt: true })
-
-  if (WIKI.config.lang.namespacing && !pageArgs.explicitLocale) {
-    return res.redirect(`/s/${pageArgs.locale}/${pageArgs.path}`)
-  }
-
-  _.set(res, 'locals.siteConfig.lang', pageArgs.locale)
-
-  if (!WIKI.auth.checkAccess(req.user, ['read:pages'], pageArgs)) {
-    return res.render('unauthorized', { action: 'source' })
-  }
+  const versionId = (req.query.v) ? _.toSafeInteger(req.query.v) : 0
 
   const page = await WIKI.models.pages.getPageFromDb({
     path: pageArgs.path,
@@ -156,13 +295,55 @@ router.get(['/s', '/s/*'], async (req, res, next) => {
     userId: req.user.id,
     isPrivate: false
   })
+
+  pageArgs.tags = _.get(page, 'tags', [])
+
+  if (WIKI.config.lang.namespacing && !pageArgs.explicitLocale) {
+    return res.redirect(`/s/${pageArgs.locale}/${pageArgs.path}`)
+  }
+
+  _.set(res, 'locals.siteConfig.lang', pageArgs.locale)
+  _.set(res, 'locals.siteConfig.rtl', req.i18n.dir() === 'rtl')
+
+  if (versionId > 0) {
+    if (!WIKI.auth.checkAccess(req.user, ['read:history'], pageArgs)) {
+      _.set(res.locals, 'pageMeta.title', 'Unauthorized')
+      return res.render('unauthorized', { action: 'sourceVersion' })
+    }
+  } else {
+    if (!WIKI.auth.checkAccess(req.user, ['read:source'], pageArgs)) {
+      _.set(res.locals, 'pageMeta.title', 'Unauthorized')
+      return res.render('unauthorized', { action: 'source' })
+    }
+  }
+
   if (page) {
-    _.set(res.locals, 'pageMeta.title', page.title)
-    _.set(res.locals, 'pageMeta.description', page.description)
-    res.render('source', { page })
+    if (versionId > 0) {
+      const pageVersion = await WIKI.models.pageHistory.getVersion({ pageId: page.id, versionId })
+      _.set(res.locals, 'pageMeta.title', pageVersion.title)
+      _.set(res.locals, 'pageMeta.description', pageVersion.description)
+      res.render('source', {
+        page: {
+          ...page,
+          ...pageVersion
+        }
+      })
+    } else {
+      _.set(res.locals, 'pageMeta.title', page.title)
+      _.set(res.locals, 'pageMeta.description', page.description)
+      res.render('source', { page })
+    }
   } else {
     res.redirect(`/${pageArgs.path}`)
   }
+})
+
+/**
+ * Tags
+ */
+router.get(['/t', '/t/*'], (req, res, next) => {
+  _.set(res.locals, 'pageMeta.title', 'Tags')
+  res.render('tags')
 })
 
 /**
@@ -180,11 +361,6 @@ router.get('/*', async (req, res, next) => {
 
     req.i18n.changeLanguage(pageArgs.locale)
 
-    if (!WIKI.auth.checkAccess(req.user, ['read:pages'], pageArgs)) {
-      _.set(res.locals, 'pageMeta.title', 'Unauthorized')
-      return res.status(403).render('unauthorized', { action: 'view' })
-    }
-
     try {
       const page = await WIKI.models.pages.getPage({
         path: pageArgs.path,
@@ -192,13 +368,30 @@ router.get('/*', async (req, res, next) => {
         userId: req.user.id,
         isPrivate: false
       })
+      pageArgs.tags = _.get(page, 'tags', [])
+
+      if (!WIKI.auth.checkAccess(req.user, ['read:pages'], pageArgs)) {
+        if (req.user.id === 2) {
+          res.cookie('loginRedirect', req.path, {
+            maxAge: 15 * 60 * 1000
+          })
+        }
+        if (pageArgs.path === 'home' && req.user.id === 2) {
+          return res.redirect('/login')
+        }
+        _.set(res.locals, 'pageMeta.title', 'Unauthorized')
+        return res.status(403).render('unauthorized', {
+          action: 'view'
+        })
+      }
 
       _.set(res, 'locals.siteConfig.lang', pageArgs.locale)
+      _.set(res, 'locals.siteConfig.rtl', req.i18n.dir() === 'rtl')
 
       if (page) {
         _.set(res.locals, 'pageMeta.title', page.title)
         _.set(res.locals, 'pageMeta.description', page.description)
-        const sidebar = await WIKI.models.navigation.getTree({ cache: true })
+        const sidebar = await WIKI.models.navigation.getTree({ cache: true, locale: pageArgs.locale })
         const injectCode = {
           css: WIKI.config.theming.injectCSS,
           head: WIKI.config.theming.injectHead,
@@ -219,7 +412,7 @@ router.get('/*', async (req, res, next) => {
       } else {
         _.set(res.locals, 'pageMeta.title', 'Page Not Found')
         if (WIKI.auth.checkAccess(req.user, ['write:pages'], pageArgs)) {
-          res.status(404).render('new', { pagePath: req.path })
+          res.status(404).render('new', { path: pageArgs.path, locale: pageArgs.locale })
         } else {
           res.status(404).render('notfound', { action: 'view' })
         }

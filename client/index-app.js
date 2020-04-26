@@ -1,9 +1,20 @@
 require('core-js/stable')
 require('regenerator-runtime/runtime')
 
-require('vuetify/src/stylus/main.styl')
+switch (window.document.documentElement.lang) {
+  case 'ar':
+  case 'fa':
+    require('./scss/fonts/arabic.scss')
+    break
+  default:
+    require('./scss/fonts/default.scss')
+    break
+}
+
 require('./scss/app.scss')
 require('./themes/' + process.env.CURRENT_THEME + '/scss/app.scss')
+
+require('@mdi/font/css/materialdesignicons.css')
 
 require('./helpers/compatibility.js')
 require('./client-app.js')

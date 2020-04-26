@@ -6,12 +6,11 @@
           img.animated.fadeInUp(src='/svg/icon-process.svg', alt='Rendering', style='width: 80px;')
           .admin-header-title
             .headline.primary--text.animated.fadeInLeft Rendering
-            .subheading.grey--text.animated.fadeInLeft.wait-p4s Configure how content is rendered #[v-chip(label, color='primary', small).white--text coming soon]
           v-spacer
-          v-btn.animated.fadeInDown.wait-p2s(outline, color='grey', @click='refresh', large)
-            v-icon refresh
+          v-btn.mx-3.animated.fadeInDown.wait-p2s(outlined, color='grey', @click='refresh', large)
+            v-icon mdi-refresh
           v-btn.animated.fadeInDown(color='success', @click='save', depressed, large)
-            v-icon(left) check
+            v-icon(left) mdi-check
             span {{$t('common:actions.apply')}}
 
       v-flex.animated.fadeInUp(lg3, xs12)
@@ -21,43 +20,48 @@
           flat
           dark
           )
-          v-icon.mr-2 line_weight
-          .subheading Pipeline
-        v-expansion-panel.adm-rendering-pipeline(v-model='selectedCore')
-          v-expansion-panel-content(
-            hide-actions
+          .subtitle-1 Pipeline
+        v-expansion-panels.adm-rendering-pipeline(
+          v-model='selectedCore'
+          accordion
+          mandatory
+          )
+          v-expansion-panel(
             v-for='core in renderers'
             :key='core.key'
             )
-            v-toolbar(
-              slot='header'
-              color='blue'
-              dense
-              dark
-              flat
-              )
-              v-spacer
-              .body-2 {{core.input}}
-              v-icon.mx-2 arrow_forward
-              .caption {{core.output}}
-              v-spacer
-            v-list.py-0(two-line, dense)
-              template(v-for='(rdr, n) in core.children')
-                v-list-tile(
-                  avatar
-                  :key='rdr.key'
-                  @click='selectRenderer(rdr.key)'
-                  :class='currentRenderer.key === rdr.key ? (darkMode ? `grey darken-4-l4` : `blue lighten-5`) : ``'
-                  )
-                  v-list-tile-avatar
-                    v-icon(:color='currentRenderer.key === rdr.key ? "primary" : "grey"') {{rdr.icon}}
-                  v-list-tile-content
-                    v-list-tile-title {{rdr.title}}
-                    v-list-tile-sub-title {{rdr.description}}
-                  v-list-tile-avatar
-                    status-indicator(v-if='rdr.isEnabled', positive, pulse)
-                    status-indicator(v-else, negative, pulse)
-                v-divider.my-0(v-if='n < core.children.length - 1')
+            v-expansion-panel-header(
+              hide-actions
+              ripple
+            )
+              v-toolbar(
+                color='blue'
+                dense
+                dark
+                flat
+                )
+                v-spacer
+                .body-2 {{core.input}}
+                v-icon.mx-2 mdi-arrow-right-bold-hexagon-outline
+                .caption {{core.output}}
+                v-spacer
+            v-expansion-panel-content
+              v-list.py-0(two-line, dense)
+                template(v-for='(rdr, n) in core.children')
+                  v-list-item(
+                    :key='rdr.key'
+                    @click='selectRenderer(rdr.key)'
+                    :class='currentRenderer.key === rdr.key ? (darkMode ? `grey darken-4-l4` : `blue lighten-5`) : ``'
+                    )
+                    v-list-item-avatar(size='24')
+                      v-icon(:color='currentRenderer.key === rdr.key ? "primary" : "grey"') {{rdr.icon}}
+                    v-list-item-content
+                      v-list-item-title {{rdr.title}}
+                      v-list-item-subtitle: .caption {{rdr.description}}
+                    v-list-item-avatar(size='24')
+                      status-indicator(v-if='rdr.isEnabled', positive, pulse)
+                      status-indicator(v-else, negative, pulse)
+                  v-divider.my-0(v-if='n < core.children.length - 1')
 
       v-flex(lg9, xs12)
         v-card.wiki-form.animated.fadeInUp
@@ -68,22 +72,23 @@
             dense
             )
             v-icon.mr-2 {{currentRenderer.icon}}
-            .subheading {{currentRenderer.title}}
+            .subtitle-1 {{currentRenderer.title}}
             v-spacer
-            .pt-3.mt-1
-              v-switch(
-                dark
-                color='white'
-                label='Enabled'
-                v-model='currentRenderer.isEnabled'
-                )
+            v-switch(
+              dark
+              color='white'
+              label='Enabled'
+              v-model='currentRenderer.isEnabled'
+              hide-details
+              inset
+              )
           v-card-text.pb-4.pt-2.pl-4
-            v-subheader.pl-0 Rendering Module Configuration
-            .body-1.ml-3(v-if='!currentRenderer.config || currentRenderer.config.length < 1') This rendering module has no configuration options you can modify.
+            .overline.my-5 Rendering Module Configuration
+            .body-2.ml-3(v-if='!currentRenderer.config || currentRenderer.config.length < 1'): em This rendering module has no configuration options you can modify.
             template(v-else, v-for='(cfg, idx) in currentRenderer.config')
               v-select(
                 v-if='cfg.value.type === "string" && cfg.value.enum'
-                outline
+                outlined
                 :items='cfg.value.enum'
                 :key='cfg.key'
                 :label='cfg.value.title'
@@ -100,10 +105,11 @@
                 color='primary'
                 :hint='cfg.value.hint ? cfg.value.hint : ""'
                 persistent-hint
+                inset
                 )
               v-text-field(
                 v-else
-                outline
+                outlined
                 :key='cfg.key'
                 :label='cfg.value.title'
                 v-model='cfg.value.value'
@@ -111,7 +117,7 @@
                 persistent-hint
                 :class='cfg.value.hint ? "mb-2" : ""'
                 )
-              v-divider.my-3(v-if='idx < currentRenderer.config.length - 1')
+              v-divider.my-5(v-if='idx < currentRenderer.config.length - 1')
           v-card-chin
             v-spacer
             .caption.pr-3.grey--text Module: {{ currentRenderer.key }}
@@ -125,6 +131,7 @@ import { get } from 'vuex-pathify'
 import { StatusIndicator } from 'vue-status-indicator'
 
 import renderersQuery from 'gql/admin/rendering/rendering-query-renderers.gql'
+import renderersSaveMutation from 'gql/admin/rendering/rendering-mutation-save-renderers.gql'
 
 export default {
   components: {
@@ -157,18 +164,34 @@ export default {
       })
     },
     async refresh () {
+      await this.$apollo.queries.renderers.refetch()
       this.$store.commit('showNotification', {
-        style: 'indigo',
-        message: `Coming soon...`,
-        icon: 'directions_boat'
+        message: 'Rendering active configuration has been reloaded.',
+        style: 'success',
+        icon: 'cached'
       })
     },
     async save () {
-      this.$store.commit('showNotification', {
-        style: 'indigo',
-        message: `Coming soon...`,
-        icon: 'directions_boat'
+      this.$store.commit(`loadingStart`, 'admin-rendering-saverenderers')
+      await this.$apollo.mutate({
+        mutation: renderersSaveMutation,
+        variables: {
+          renderers: _.reduce(this.renderers, (result, core) => {
+            result = _.concat(result, core.children.map(rd => ({
+              key: rd.key,
+              isEnabled: rd.isEnabled,
+              config: rd.config.map(cfg => ({ key: cfg.key, value: JSON.stringify({ v: cfg.value.value }) }))
+            })))
+            return result
+          }, [])
+        }
       })
+      this.$store.commit('showNotification', {
+        message: 'Rendering configuration saved successfully.',
+        style: 'success',
+        icon: 'check'
+      })
+      this.$store.commit(`loadingStop`, 'admin-rendering-saverenderers')
     }
   },
   apollo: {
@@ -211,10 +234,17 @@ export default {
 
 <style lang='scss'>
 .adm-rendering-pipeline {
-  border-top: 1px solid #FFF;
+  .v-expansion-panel--active .v-expansion-panel-header {
+    min-height: 0;
+  }
 
-  .v-expansion-panel__header {
-    padding: 0 0;
+  .v-expansion-panel-header {
+    padding: 0;
+    margin-top: 1px;
+  }
+
+  .v-expansion-panel-content__wrap {
+    padding: 0;
   }
 }
 </style>

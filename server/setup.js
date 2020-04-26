@@ -1,14 +1,12 @@
 const path = require('path')
-const uuid = require('uuid/v4')
+const { v4: uuid } = require('uuid')
 const bodyParser = require('body-parser')
 const compression = require('compression')
 const express = require('express')
 const http = require('http')
-const https = require('https')
 const Promise = require('bluebird')
 const fs = require('fs-extra')
 const _ = require('lodash')
-const cfgHelper = require('./helpers/config')
 const crypto = Promise.promisifyAll(require('crypto'))
 const pem2jwk = require('pem-jwk').pem2jwk
 const semver = require('semver')
@@ -50,6 +48,7 @@ module.exports = () => {
   app.locals.config = WIKI.config
   app.locals.data = WIKI.data
   app.locals._ = require('lodash')
+  app.locals.devMode = WIKI.devMode
 
   // ----------------------------------------
   // HMR (Dev Mode Only)
@@ -87,7 +86,7 @@ module.exports = () => {
         featurePersonalWikis: true
       })
       _.set(WIKI.config, 'graphEndpoint', 'https://graph.requarks.io')
-      _.set(WIKI.config, 'host', 'http://')
+      _.set(WIKI.config, 'host', req.body.siteUrl)
       _.set(WIKI.config, 'lang', {
         code: 'en',
         autoUpdate: true,
@@ -120,7 +119,11 @@ module.exports = () => {
       _.set(WIKI.config, 'sessionSecret', (await crypto.randomBytesAsync(32)).toString('hex'))
       _.set(WIKI.config, 'theming', {
         theme: 'default',
-        darkMode: false
+        darkMode: false,
+        iconset: 'mdi',
+        injectCSS: '',
+        injectHead: '',
+        injectBody: ''
       })
       _.set(WIKI.config, 'title', 'Wiki.js')
 
@@ -129,19 +132,11 @@ module.exports = () => {
         throw new Error('Node.js 10.12.x or later required!')
       }
 
-      // Upgrade from WIKI.js 1.x?
-      if (req.body.upgrade) {
-        await WIKI.system.upgradeFromMongo({
-          mongoCnStr: cfgHelper.parseConfigValue(req.body.upgMongo)
-        })
-      }
-
       // Create directory structure
       WIKI.logger.info('Creating data directories...')
-      const dataPath = path.join(process.cwd(), 'data')
-      await fs.ensureDir(dataPath)
-      await fs.emptyDir(path.join(dataPath, 'cache'))
-      await fs.ensureDir(path.join(dataPath, 'uploads'))
+      await fs.ensureDir(path.resolve(WIKI.ROOTPATH, WIKI.config.dataPath))
+      await fs.emptyDir(path.resolve(WIKI.ROOTPATH, WIKI.config.dataPath, 'cache'))
+      await fs.ensureDir(path.resolve(WIKI.ROOTPATH, WIKI.config.dataPath, 'uploads'))
 
       // Generate certificates
       WIKI.logger.info('Generating certificates...')
@@ -183,6 +178,38 @@ module.exports = () => {
         'title'
       ])
 
+      // Truncate tables (reset from previous failed install)
+      await WIKI.models.locales.query().where('code', '!=', 'x').del()
+      await WIKI.models.navigation.query().truncate()
+      switch (WIKI.config.db.type) {
+        case 'postgres':
+          await WIKI.models.knex.raw('TRUNCATE groups, users CASCADE')
+          break
+        case 'mysql':
+        case 'mariadb':
+          await WIKI.models.groups.query().where('id', '>', 0).del()
+          await WIKI.models.users.query().where('id', '>', 0).del()
+          await WIKI.models.knex.raw('ALTER TABLE `groups` AUTO_INCREMENT = 1')
+          await WIKI.models.knex.raw('ALTER TABLE `users` AUTO_INCREMENT = 1')
+          break
+        case 'mssql':
+          await WIKI.models.groups.query().del()
+          await WIKI.models.users.query().del()
+          await WIKI.models.knex.raw(`
+            IF EXISTS (SELECT * FROM sys.identity_columns WHERE OBJECT_NAME(OBJECT_ID) = 'groups' AND last_value IS NOT NULL)
+              DBCC CHECKIDENT ([groups], RESEED, 0)
+          `)
+          await WIKI.models.knex.raw(`
+            IF EXISTS (SELECT * FROM sys.identity_columns WHERE OBJECT_NAME(OBJECT_ID) = 'users' AND last_value IS NOT NULL)
+              DBCC CHECKIDENT ([users], RESEED, 0)
+          `)
+          break
+        case 'sqlite':
+          await WIKI.models.groups.query().truncate()
+          await WIKI.models.users.query().truncate()
+          break
+      }
+
       // Create default locale
       WIKI.logger.info('Installing default locale...')
       await WIKI.models.locales.query().insert({
@@ -210,6 +237,9 @@ module.exports = () => {
         ]),
         isSystem: true
       })
+      if (adminGroup.id !== 1 || guestGroup.id !== 2) {
+        throw new Error('Incorrect groups auto-increment configuration! Should start at 0 and increment by 1. Contact your database administrator.')
+      }
 
       // Load authentication strategies + enable local
       await WIKI.models.authentication.refreshStrategiesFromDisk()
@@ -234,10 +264,6 @@ module.exports = () => {
 
       // Create root administrator
       WIKI.logger.info('Creating root administrator...')
-      await WIKI.models.users.query().delete().where({
-        providerKey: 'local',
-        email: req.body.adminEmail
-      })
       const adminUser = await WIKI.models.users.query().insert({
         email: req.body.adminEmail,
         provider: 'local',
@@ -253,10 +279,6 @@ module.exports = () => {
 
       // Create Guest account
       WIKI.logger.info('Creating guest account...')
-      await WIKI.models.users.query().delete().where({
-        providerKey: 'local',
-        email: 'guest@example.com'
-      })
       const guestUser = await WIKI.models.users.query().insert({
         provider: 'local',
         email: 'guest@example.com',
@@ -270,17 +292,19 @@ module.exports = () => {
         isVerified: true
       })
       await guestUser.$relatedQuery('groups').relate(guestGroup.id)
+      if (adminUser.id !== 1 || guestUser.id !== 2) {
+        throw new Error('Incorrect users auto-increment configuration! Should start at 0 and increment by 1. Contact your database administrator.')
+      }
 
       // Create site nav
 
       WIKI.logger.info('Creating default site navigation')
-      await WIKI.models.navigation.query().delete().where({ key: 'site' })
       await WIKI.models.navigation.query().insert({
         key: 'site',
         config: [
           {
             id: uuid(),
-            icon: 'home',
+            icon: 'mdi-home',
             kind: 'link',
             label: 'Home',
             target: '/',
@@ -337,32 +361,8 @@ module.exports = () => {
 
   app.set('port', WIKI.config.port)
 
-  if (WIKI.config.ssl.enabled) {
-    WIKI.logger.info(`HTTPS Server on port: [ ${WIKI.config.port} ]`)
-    const tlsOpts = {}
-    try {
-      if (WIKI.config.ssl.format === 'pem') {
-        tlsOpts.key = fs.readFileSync(WIKI.config.ssl.key)
-        tlsOpts.cert = fs.readFileSync(WIKI.config.ssl.cert)
-      } else {
-        tlsOpts.pfx = fs.readFileSync(WIKI.config.ssl.pfx)
-      }
-      if (!_.isEmpty(WIKI.config.ssl.passphrase)) {
-        tlsOpts.passphrase = WIKI.config.ssl.passphrase
-      }
-      if (!_.isEmpty(WIKI.config.ssl.dhparam)) {
-        tlsOpts.dhparam = WIKI.config.ssl.dhparam
-      }
-    } catch (err) {
-      WIKI.logger.error('Failed to setup HTTPS server parameters:')
-      WIKI.logger.error(err)
-      return process.exit(1)
-    }
-    WIKI.server = https.createServer(tlsOpts, app)
-  } else {
-    WIKI.logger.info(`HTTP Server on port: [ ${WIKI.config.port} ]`)
-    WIKI.server = http.createServer(app)
-  }
+  WIKI.logger.info(`HTTP Server on port: [ ${WIKI.config.port} ]`)
+  WIKI.server = http.createServer(app)
   WIKI.server.listen(WIKI.config.port, WIKI.config.bindIP)
 
   var openConnections = []

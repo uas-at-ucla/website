@@ -6,40 +6,37 @@
           img.animated.fadeInUp(src='/svg/icon-paint-palette.svg', alt='Theme', style='width: 80px;')
           .admin-header-title
             .headline.primary--text.animated.fadeInLeft {{$t('admin:theme.title')}}
-            .subheading.grey--text.animated.fadeInLeft.wait-p2s {{$t('admin:theme.subtitle')}}
+            .subtitle-1.grey--text.animated.fadeInLeft.wait-p2s {{$t('admin:theme.subtitle')}}
           v-spacer
           v-btn.animated.fadeInRight(color='success', depressed, @click='save', large, :loading='loading')
-            v-icon(left) check
+            v-icon(left) mdi-check
             span {{$t('common:actions.apply')}}
         v-form.pt-3
           v-layout(row wrap)
             v-flex(lg6 xs12)
-              v-card.wiki-form.animated.fadeInUp
+              v-card.animated.fadeInUp
                 v-toolbar(color='primary', dark, dense, flat)
-                  v-toolbar-title
-                    .subheading {{$t('admin:theme.title')}}
+                  v-toolbar-title.subtitle-1 {{$t('admin:theme.title')}}
                 v-card-text
                   v-select(
                     :items='themes'
-                    outline
-                    background-color='grey lighten-2'
-                    prepend-icon='palette'
+                    outlined
+                    prepend-icon='mdi-palette'
                     v-model='config.theme'
                     :label='$t(`admin:theme.siteTheme`)'
                     persistent-hint
                     :hint='$t(`admin:theme.siteThemeHint`)'
                     )
                     template(slot='item', slot-scope='data')
-                      v-list-tile-avatar
-                        v-icon.blue--text(dark) filter_frames
-                      v-list-tile-content
-                        v-list-tile-title(v-html='data.item.text')
-                        v-list-tile-sub-title(v-html='data.item.author')
+                      v-list-item-avatar
+                        v-icon.blue--text(dark) mdi-image-filter-frames
+                      v-list-item-content
+                        v-list-item-title(v-html='data.item.text')
+                        v-list-item-sub-title(v-html='data.item.author')
                   v-select.mt-3(
                     :items='iconsets'
-                    outline
-                    background-color='grey lighten-2'
-                    prepend-icon='pets'
+                    outlined
+                    prepend-icon='mdi-paw'
                     v-model='config.iconset'
                     :label='$t(`admin:theme.iconset`)'
                     persistent-hint
@@ -47,6 +44,7 @@
                     )
                   v-divider.mt-3
                   v-switch(
+                    inset
                     v-model='darkMode'
                     :label='$t(`admin:theme.darkMode`)'
                     color='primary'
@@ -54,16 +52,58 @@
                     :hint='$t(`admin:theme.darkModeHint`)'
                     )
 
-              v-card.wiki-form.mt-3.animated.fadeInUp.wait-p2s
+              v-card.mt-3.animated.fadeInUp.wait-p1s
                 v-toolbar(color='primary', dark, dense, flat)
-                  v-toolbar-title
-                    .subheading {{$t(`admin:theme.codeInjection`)}}
+                  v-toolbar-title.subtitle-1 {{$t(`admin:theme.options`)}}
+                  v-spacer
+                  v-chip(label, color='white', small).primary--text coming soon
                 v-card-text
-                  v-textarea(
+                  v-select(
+                    :items='[]'
+                    outlined
+                    prepend-icon='mdi-border-vertical'
+                    v-model='config.iconset'
+                    label='Table of Contents Position'
+                    persistent-hint
+                    hint='Select whether the table of contents is shown on the left, right or not at all.'
+                    disabled
+                    )
+
+            v-flex(lg6 xs12)
+              v-card.animated.fadeInUp.wait-p2s
+                v-toolbar(color='teal', dark, dense, flat)
+                  v-toolbar-title.subtitle-1 {{$t('admin:theme.downloadThemes')}}
+                  v-spacer
+                  v-chip(label, color='white', small).teal--text coming soon
+                v-data-table(
+                  :headers='headers',
+                  :items='themes',
+                  hide-default-footer,
+                  item-key='value',
+                  :items-per-page='1000'
+                )
+                  template(v-slot:item='thm')
+                    td
+                      strong {{thm.item.text}}
+                    td
+                      span {{ thm.item.author }}
+                    td.text-xs-center
+                      v-progress-circular(v-if='thm.item.isDownloading', indeterminate, color='blue', size='20', :width='2')
+                      v-btn(v-else-if='thm.item.isInstalled && thm.item.installDate < thm.item.updatedAt', icon)
+                        v-icon.blue--text mdi-cached
+                      v-btn(v-else-if='thm.item.isInstalled', icon)
+                        v-icon.green--text mdi-check-bold
+                      v-btn(v-else, icon)
+                        v-icon.grey--text mdi-cloud-download
+
+              v-card.mt-3.animated.fadeInUp.wait-p2s
+                v-toolbar(color='primary', dark, dense, flat)
+                  v-toolbar-title.subtitle-1 {{$t(`admin:theme.codeInjection`)}}
+                v-card-text
+                  v-textarea.is-monospaced(
                     v-model='config.injectCSS'
                     :label='$t(`admin:theme.cssOverride`)'
-                    outline
-                    background-color='grey lighten-1'
+                    outlined
                     color='primary'
                     persistent-hint
                     :hint='$t(`admin:theme.cssOverrideHint`)'
@@ -72,53 +112,24 @@
                   i18next.caption.pl-2.ml-1(path='admin:theme.cssOverrideWarning', tag='div')
                     strong.red--text(place='caution') {{$t('admin:theme.cssOverrideWarningCaution')}}
                     code(place='cssClass') .contents
-                  v-textarea.mt-3(
+                  v-textarea.is-monospaced.mt-3(
                     v-model='config.injectHead'
                     :label='$t(`admin:theme.headHtmlInjection`)'
-                    outline
-                    background-color='grey lighten-1'
+                    outlined
                     color='primary'
                     persistent-hint
                     :hint='$t(`admin:theme.headHtmlInjectionHint`)'
                     auto-grow
                     )
-                  v-textarea.mt-2(
+                  v-textarea.is-monospaced.mt-2(
                     v-model='config.injectBody'
                     :label='$t(`admin:theme.bodyHtmlInjection`)'
-                    outline
-                    background-color='grey lighten-1'
+                    outlined
                     color='primary'
                     persistent-hint
                     :hint='$t(`admin:theme.bodyHtmlInjectionHint`)'
                     auto-grow
                     )
-            v-flex(lg6 xs12)
-              v-card.animated.fadeInUp.wait-p2s
-                v-toolbar(color='teal', dark, dense, flat)
-                  v-toolbar-title
-                    .subheading {{$t('admin:theme.downloadThemes')}}
-                  v-spacer
-                  v-chip(label, color='white', small).teal--text coming soon
-                v-data-table(
-                  :headers='headers',
-                  :items='themes',
-                  hide-actions,
-                  item-key='value',
-                  :rows-per-page-items='[-1]'
-                )
-                  template(v-slot:items='thm')
-                    td
-                      strong {{thm.item.text}}
-                    td
-                      span {{ thm.item.author }}
-                    td.text-xs-center
-                      v-progress-circular(v-if='thm.item.isDownloading', indeterminate, color='blue', size='20', :width='2')
-                      v-btn(v-else-if='thm.item.isInstalled && thm.item.installDate < thm.item.updatedAt', icon)
-                        v-icon.blue--text cached
-                      v-btn(v-else-if='thm.item.isInstalled', icon)
-                        v-icon.green--text check
-                      v-btn(v-else, icon)
-                        v-icon.grey--text cloud_download
 </template>
 
 <script>
@@ -136,10 +147,9 @@ export default {
         { text: 'Default', author: 'requarks.io', value: 'default', isInstalled: true, installDate: '', updatedAt: '' }
       ],
       iconsets: [
-        { text: 'Material Icons (default)', value: 'md' },
-        { text: 'Material Design Icons', value: 'mdi' },
+        { text: 'Material Design Icons (default)', value: 'mdi' },
         { text: 'Font Awesome 5', value: 'fa' },
-        { text: 'Font Awesome 4', value: 'fa4' },
+        { text: 'Font Awesome 4', value: 'fa4' }
       ],
       config: {
         theme: 'default',
@@ -176,11 +186,17 @@ export default {
       ]
     }
   },
+  watch: {
+    'darkMode' (newValue, oldValue) {
+      this.$vuetify.theme.dark = newValue
+    }
+  },
   mounted() {
     this.darkModeInitial = this.darkMode
   },
   beforeDestroy() {
     this.darkMode = this.darkModeInitial
+    this.$vuetify.theme.dark = this.darkModeInitial
   },
   methods: {
     async save () {
@@ -230,5 +246,10 @@ export default {
 </script>
 
 <style lang='scss'>
-
+.v-textarea.is-monospaced textarea {
+  font-family: 'Roboto Mono', 'Courier New', Courier, monospace;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}
 </style>

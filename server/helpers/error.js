@@ -117,6 +117,14 @@ module.exports = {
     message: 'Mail template failed to load.',
     code: 3003
   }),
+  PageCreateForbidden: CustomError('PageCreateForbidden', {
+    message: 'You are not authorized to create this page.',
+    code: 6008
+  }),
+  PageDeleteForbidden: CustomError('PageDeleteForbidden', {
+    message: 'You are not authorized to delete this page.',
+    code: 6010
+  }),
   PageGenericError: CustomError('PageGenericError', {
     message: 'An unexpected error occured during a page operation.',
     code: 6001
@@ -125,9 +133,41 @@ module.exports = {
     message: 'Cannot create this page because an entry already exists at the same path.',
     code: 6002
   }),
+  PageEmptyContent: CustomError('PageEmptyContent', {
+    message: 'Page content cannot be empty.',
+    code: 6004
+  }),
+  PageHistoryForbidden: CustomError('PageHistoryForbidden', {
+    message: 'You are not authorized to view the history of this page.',
+    code: 6012
+  }),
+  PageIllegalPath: CustomError('PageIllegalPath', {
+    message: 'Page path cannot contains illegal characters.',
+    code: 6005
+  }),
+  PageMoveForbidden: CustomError('PageMoveForbidden', {
+    message: 'You are not authorized to move this page.',
+    code: 6007
+  }),
   PageNotFound: CustomError('PageNotFound', {
     message: 'This page does not exist.',
     code: 6003
+  }),
+  PagePathCollision: CustomError('PagePathCollision', {
+    message: 'Destination page path already exists.',
+    code: 6006
+  }),
+  PageRestoreForbidden: CustomError('PageRestoreForbidden', {
+    message: 'You are not authorized to restore this page version.',
+    code: 6011
+  }),
+  PageUpdateForbidden: CustomError('PageUpdateForbidden', {
+    message: 'You are not authorized to update this page.',
+    code: 6009
+  }),
+  PageViewForbidden: CustomError('PageViewForbidden', {
+    message: 'You are not authorized to view this page.',
+    code: 6013
   }),
   SearchActivationFailed: CustomError('SearchActivationFailed', {
     message: 'Search Engine activation failed.',
@@ -137,8 +177,36 @@ module.exports = {
     message: 'An unexpected error occured during search operation.',
     code: 4001
   }),
+  SystemGenericError: CustomError('SystemGenericError', {
+    message: 'An unexpected error occured.',
+    code: 7001
+  }),
+  SystemSSLDisabled: CustomError('SystemSSLDisabled', {
+    message: 'SSL is not enabled.',
+    code: 7002
+  }),
+  SystemSSLLEUnavailable: CustomError('SystemSSLLEUnavailable', {
+    message: 'Let\'s Encrypt is not initialized.',
+    code: 7004
+  }),
+  SystemSSLRenewInvalidProvider: CustomError('SystemSSLRenewInvalidProvider', {
+    message: 'Current provider does not support SSL certificate renewal.',
+    code: 7003
+  }),
   UserCreationFailed: CustomError('UserCreationFailed', {
     message: 'An unexpected error occured during user creation.',
     code: 1009
+  }),
+  UserDeleteForeignConstraint: CustomError('UserCreationFailed', {
+    message: 'Cannot delete user because of content relational constraints.',
+    code: 1017
+  }),
+  UserDeleteProtected: CustomError('UserDeleteProtected', {
+    message: 'Cannot delete a protected system account.',
+    code: 1018
+  }),
+  UserNotFound: CustomError('UserNotFound', {
+    message: 'This user does not exist.',
+    code: 1016
   })
 }

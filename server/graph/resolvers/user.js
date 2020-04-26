@@ -1,3 +1,4 @@
+const graphHelper = require('../../helpers/graph')
 
 /* global WIKI */
 
@@ -28,28 +29,82 @@ module.exports = {
     }
   },
   UserMutation: {
-    create(obj, args) {
-      return WIKI.models.users.register({
-        ...args,
-        verify: false,
-        bypassChecks: true
-      })
+    async create (obj, args) {
+      try {
+        await WIKI.models.users.createNewUser(args)
+
+        return {
+          responseResult: graphHelper.generateSuccess('User created successfully')
+        }
+      } catch (err) {
+        return graphHelper.generateError(err)
+      }
     },
-    delete(obj, args) {
-      return WIKI.models.users.query().deleteById(args.id)
+    async delete (obj, args) {
+      try {
+        if (args.id <= 2) {
+          throw new WIKI.Error.UserDeleteProtected()
+        }
+        await WIKI.models.users.deleteUser(args.id)
+        return {
+          responseResult: graphHelper.generateSuccess('User deleted successfully')
+        }
+      } catch (err) {
+        if (err.message.indexOf('foreign') >= 0) {
+          return graphHelper.generateError(new WIKI.Error.UserDeleteForeignConstraint())
+        } else {
+          return graphHelper.generateError(err)
+        }
+      }
     },
-    update(obj, args) {
-      return WIKI.models.users.query().patch({
-        email: args.email,
-        name: args.name,
-        provider: args.provider,
-        providerId: args.providerId
-      }).where('id', args.id)
+    async update (obj, args) {
+      try {
+        await WIKI.models.users.updateUser(args)
+
+        return {
+          responseResult: graphHelper.generateSuccess('User created successfully')
+        }
+      } catch (err) {
+        return graphHelper.generateError(err)
+      }
     },
-    resetPassword(obj, args) {
-      return false
+    async verify (obj, args) {
+      try {
+        await WIKI.models.users.query().patch({ isVerified: true }).findById(args.id)
+
+        return {
+          responseResult: graphHelper.generateSuccess('User verified successfully')
+        }
+      } catch (err) {
+        return graphHelper.generateError(err)
+      }
     },
-    setPassword(obj, args) {
+    async activate (obj, args) {
+      try {
+        await WIKI.models.users.query().patch({ isActive: true }).findById(args.id)
+
+        return {
+          responseResult: graphHelper.generateSuccess('User activated successfully')
+        }
+      } catch (err) {
+        return graphHelper.generateError(err)
+      }
+    },
+    async deactivate (obj, args) {
+      try {
+        if (args.id <= 2) {
+          throw new Error('Cannot deactivate system accounts.')
+        }
+        await WIKI.models.users.query().patch({ isActive: false }).findById(args.id)
+
+        return {
+          responseResult: graphHelper.generateSuccess('User deactivated successfully')
+        }
+      } catch (err) {
+        return graphHelper.generateError(err)
+      }
+    },
+    resetPassword (obj, args) {
       return false
     }
   },

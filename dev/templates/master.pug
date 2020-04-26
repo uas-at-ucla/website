@@ -1,5 +1,5 @@
 doctype html
-html
+html(lang=siteConfig.lang)
   head
     meta(http-equiv='X-UA-Compatible', content='IE=edge')
     meta(charset='UTF-8')
@@ -22,20 +22,20 @@ html
 
     //- Site Properties
     script.
-      var siteConfig = !{JSON.stringify(siteConfig)}; var siteLangs = !{JSON.stringify(langs)}
+      var siteConfig = !{JSON.stringify(siteConfig)}
+      var siteLangs = !{JSON.stringify(langs)}
+
+    //- Dev Mode Warning
+    if devMode
+      script.
+        siteConfig.devMode = true
 
     //- Icon Set
-    if config.theming.iconset === 'mdi'
+    if config.theming.iconset === 'fa'
       link(
         type='text/css'
         rel='stylesheet'
-        href='https://cdn.materialdesignicons.com/3.7.95/css/materialdesignicons.min.css'
-        )
-    else if config.theming.iconset === 'fa'
-      link(
-        type='text/css'
-        rel='stylesheet'
-        href='https://use.fontawesome.com/releases/v5.9.0/css/all.css'
+        href='https://use.fontawesome.com/releases/v5.10.0/css/all.css'
         )
     else if config.theming.iconset === 'fa4'
       link(
@@ -51,7 +51,7 @@ html
       type='text/css'
       rel='stylesheet'
       href='<%= htmlWebpackPlugin.files.css[index] %>'
-      integrity='<%= htmlWebpackPlugin.files.cssIntegrity[index] %>'
+      integrity=config.security.securitySRI ? '<%= htmlWebpackPlugin.files.cssIntegrity[index] %>' : false
       crossorigin='<%= webpackConfig.output.crossOriginLoading %>'
     )
       <% } else { %>
@@ -65,11 +65,11 @@ html
 
     //- JS
     <% for (var index in htmlWebpackPlugin.files.js) { %>
-      <% if (htmlWebpackPlugin.files.cssIntegrity) { %>
+      <% if (htmlWebpackPlugin.files.jsIntegrity) { %>
     script(
       type='text/javascript'
       src='<%= htmlWebpackPlugin.files.js[index] %>'
-      integrity='<%= htmlWebpackPlugin.files.jsIntegrity[index] %>'
+      integrity=config.security.securitySRI ? '<%= htmlWebpackPlugin.files.jsIntegrity[index] %>' : false
       crossorigin='<%= webpackConfig.output.crossOriginLoading %>'
       )
       <% } else { %>

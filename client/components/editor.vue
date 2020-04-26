@@ -2,35 +2,48 @@
   v-app.editor(:dark='darkMode')
     nav-header(dense)
       template(slot='mid')
-        v-spacer
-        .subheading.grey--text {{currentPageTitle}}
-        v-spacer
-      template(slot='actions')
-        v-btn.animated.fadeInDown(
+        v-text-field.editor-title-input(
+          dark
+          solo
           flat
+          v-model='currentPageTitle'
+          hide-details
+          background-color='black'
+          dense
+          full-width
+        )
+      template(slot='actions')
+        v-btn.mr-3.animated.fadeIn(color='amber', outlined, small, v-if='isConflict', @click='openConflict')
+          .overline.amber--text.mr-3 Conflict
+          status-indicator(intermediary, pulse)
+        v-btn.animated.fadeInDown(
+          text
           color='green'
-          @click.native.stop='save'
+          @click='save'
+          @click.ctrl.exact='saveAndClose'
           :class='{ "is-icon": $vuetify.breakpoint.mdAndDown }'
           )
-          v-icon(color='green', :left='$vuetify.breakpoint.lgAndUp') check
-          span.white--text(v-if='$vuetify.breakpoint.lgAndUp') {{ mode === 'create' ? $t('common:actions.create') : $t('common:actions.save') }}
+          v-icon(color='green', :left='$vuetify.breakpoint.lgAndUp') mdi-check
+          span.grey--text(v-if='$vuetify.breakpoint.lgAndUp && mode !== `create` && !isDirty') {{ $t('editor:save.saved') }}
+          span.white--text(v-else-if='$vuetify.breakpoint.lgAndUp') {{ mode === 'create' ? $t('common:actions.create') : $t('common:actions.save') }}
         v-btn.animated.fadeInDown.wait-p1s(
-          flat
+          text
           color='blue'
-          @click.native.stop='openPropsModal'
+          @click='openPropsModal'
           :class='{ "is-icon": $vuetify.breakpoint.mdAndDown, "mx-0": !welcomeMode, "ml-0": welcomeMode }'
           )
-          v-icon(color='blue', :left='$vuetify.breakpoint.lgAndUp') sort_by_alpha
+          v-icon(color='blue', :left='$vuetify.breakpoint.lgAndUp') mdi-tag-text-outline
           span.white--text(v-if='$vuetify.breakpoint.lgAndUp') {{ $t('common:actions.page') }}
         v-btn.animated.fadeInDown.wait-p2s(
           v-if='!welcomeMode'
-          flat
+          text
           color='red'
           :class='{ "is-icon": $vuetify.breakpoint.mdAndDown }'
-          @click.native.stop='exit'
+          @click='exit'
           )
-          v-icon(color='red', :left='$vuetify.breakpoint.lgAndUp') close
+          v-icon(color='red', :left='$vuetify.breakpoint.lgAndUp') mdi-close
           span.white--text(v-if='$vuetify.breakpoint.lgAndUp') {{ $t('common:actions.close') }}
+        v-divider.ml-3(vertical)
     v-content
       component(:is='currentEditor', :save='save')
       editor-modal-properties(v-model='dialogProps')
@@ -44,14 +57,16 @@
 
 <script>
 import _ from 'lodash'
+import gql from 'graphql-tag'
 import { get, sync } from 'vuex-pathify'
 import { AtomSpinner } from 'epic-spinners'
 import { Base64 } from 'js-base64'
+import { StatusIndicator } from 'vue-status-indicator'
 
 import createPageMutation from 'gql/editor/create.gql'
 import updatePageMutation from 'gql/editor/update.gql'
 
-import editorStore from '@/store/editor'
+import editorStore from '../store/editor'
 
 /* global WIKI */
 
@@ -61,14 +76,17 @@ export default {
   i18nOptions: { namespaces: 'editor' },
   components: {
     AtomSpinner,
+    StatusIndicator,
+    editorApi: () => import(/* webpackChunkName: "editor-api", webpackMode: "lazy" */ './editor/editor-api.vue'),
     editorCode: () => import(/* webpackChunkName: "editor-code", webpackMode: "lazy" */ './editor/editor-code.vue'),
+    editorCkeditor: () => import(/* webpackChunkName: "editor-ckeditor", webpackMode: "lazy" */ './editor/editor-ckeditor.vue'),
     editorMarkdown: () => import(/* webpackChunkName: "editor-markdown", webpackMode: "lazy" */ './editor/editor-markdown.vue'),
-    editorWysiwyg: () => import(/* webpackChunkName: "editor-wysiwyg", webpackMode: "lazy" */ './editor/editor-wysiwyg.vue'),
     editorModalEditorselect: () => import(/* webpackChunkName: "editor", webpackMode: "eager" */ './editor/editor-modal-editorselect.vue'),
     editorModalProperties: () => import(/* webpackChunkName: "editor", webpackMode: "eager" */ './editor/editor-modal-properties.vue'),
     editorModalUnsaved: () => import(/* webpackChunkName: "editor", webpackMode: "eager" */ './editor/editor-modal-unsaved.vue'),
     editorModalMedia: () => import(/* webpackChunkName: "editor", webpackMode: "eager" */ './editor/editor-modal-media.vue'),
-    editorModalBlocks: () => import(/* webpackChunkName: "editor", webpackMode: "eager" */ './editor/editor-modal-blocks.vue')
+    editorModalBlocks: () => import(/* webpackChunkName: "editor", webpackMode: "eager" */ './editor/editor-modal-blocks.vue'),
+    editorModalConflict: () => import(/* webpackChunkName: "editor-conflict", webpackMode: "lazy" */ './editor/editor-modal-conflict.vue')
   },
   props: {
     locale: {
@@ -110,10 +128,16 @@ export default {
     pageId: {
       type: Number,
       default: 0
+    },
+    checkoutDate: {
+      type: String,
+      default: new Date().toISOString()
     }
   },
   data() {
     return {
+      isSaving: false,
+      isConflict: false,
       dialogProps: false,
       dialogProgress: false,
       dialogEditorSelector: false,
@@ -128,7 +152,19 @@ export default {
     activeModal: sync('editor/activeModal'),
     mode: get('editor/mode'),
     welcomeMode() { return this.mode === `create` && this.path === `home` },
-    currentPageTitle: get('page/title')
+    currentPageTitle: sync('page/title'),
+    checkoutDateActive: sync('editor/checkoutDateActive'),
+    isDirty () {
+      return _.some([
+        this.initContentParsed !== this.$store.get('editor/content'),
+        this.locale !== this.$store.get('page/locale'),
+        this.path !== this.$store.get('page/path'),
+        this.title !== this.$store.get('page/title'),
+        this.description !== this.$store.get('page/description'),
+        this.tags !== this.$store.get('page/tags'),
+        this.isPublished !== this.$store.get('page/isPublished')
+      ], Boolean)
+    }
   },
   watch: {
     currentEditor(newValue, oldValue) {
@@ -149,13 +185,15 @@ export default {
     this.$store.commit('page/SET_TITLE', this.title)
 
     this.$store.commit('page/SET_MODE', 'edit')
+
+    this.checkoutDateActive = this.checkoutDate
   },
   mounted() {
     this.$store.set('editor/mode', this.initMode || 'create')
 
-    this.initContentParsed = this.initContent ? Base64.decode(this.initContent) : '# Header\n\nYour content here'
+    this.initContentParsed = this.initContent ? Base64.decode(this.initContent) : ''
     this.$store.set('editor/content', this.initContentParsed)
-    if (this.mode === 'create') {
+    if (this.mode === 'create' && !this.initEditor) {
       _.delay(() => {
         this.dialogEditorSelector = true
       }, 500)
@@ -165,11 +203,18 @@ export default {
 
     window.onbeforeunload = () => {
       if (!this.exitConfirmed && this.initContentParsed !== this.$store.get('editor/content')) {
-        return 'You have unsaved edits. Are you sure you want to leave the editor?'
+        return this.$t('editor:unsavedWarning')
       } else {
         return undefined
       }
     }
+
+    this.$root.$on('resetEditorConflict', () => {
+      this.isConflict = false
+    })
+
+    // this.$store.set('editor/mode', 'edit')
+    // this.currentEditor = `editorApi`
   },
   methods: {
     openPropsModal(name) {
@@ -181,8 +226,17 @@ export default {
     hideProgressDialog() {
       this.dialogProgress = false
     },
-    async save() {
+    openConflict() {
+      this.$root.$emit('saveConflict')
+    },
+    async save({ rethrow = false, overwrite = false } = {}) {
       this.showProgressDialog('saving')
+      this.isSaving = true
+
+      const saveTimeoutHandle = setTimeout(() => {
+        throw new Error('Save operation timed out.')
+      }, 30000)
+
       try {
         if (this.$store.get('editor/mode') === 'create') {
           // --------------------------------------------
@@ -194,7 +248,7 @@ export default {
             variables: {
               content: this.$store.get('editor/content'),
               description: this.$store.get('page/description'),
-              editor: 'markdown',
+              editor: this.$store.get('editor/editorKey'),
               locale: this.$store.get('page/locale'),
               isPrivate: false,
               isPublished: this.$store.get('page/isPublished'),
@@ -207,6 +261,8 @@ export default {
           })
           resp = _.get(resp, 'data.pages.create', {})
           if (_.get(resp, 'responseResult.succeeded')) {
+            this.checkoutDateActive = _.get(resp, 'page.updatedAt', this.checkoutDateActive)
+            this.isConflict = false
             this.$store.commit('showNotification', {
               message: this.$t('editor:save.createSuccess'),
               style: 'success',
@@ -214,6 +270,7 @@ export default {
             })
             this.$store.set('editor/id', _.get(resp, 'page.id'))
             this.$store.set('editor/mode', 'update')
+            this.exitConfirmed = true
             window.location.assign(`/${this.$store.get('page/locale')}/${this.$store.get('page/path')}`)
           } else {
             throw new Error(_.get(resp, 'responseResult.message'))
@@ -223,13 +280,32 @@ export default {
           // -> UPDATE EXISTING PAGE
           // --------------------------------------------
 
+          const conflictResp = await this.$apollo.query({
+            query: gql`
+              query ($id: Int!, $checkoutDate: Date!) {
+                pages {
+                  checkConflicts(id: $id, checkoutDate: $checkoutDate)
+                }
+              }
+            `,
+            fetchPolicy: 'network-only',
+            variables: {
+              id: this.pageId,
+              checkoutDate: this.checkoutDateActive
+            }
+          })
+          if (_.get(conflictResp, 'data.pages.checkConflicts', false)) {
+            this.$root.$emit('saveConflict')
+            throw new Error(this.$t('editor:conflict.warning'))
+          }
+
           let resp = await this.$apollo.mutate({
             mutation: updatePageMutation,
             variables: {
               id: this.$store.get('page/id'),
               content: this.$store.get('editor/content'),
               description: this.$store.get('page/description'),
-              editor: 'markdown',
+              editor: this.$store.get('editor/editorKey'),
               locale: this.$store.get('page/locale'),
               isPrivate: false,
               isPublished: this.$store.get('page/isPublished'),
@@ -242,11 +318,18 @@ export default {
           })
           resp = _.get(resp, 'data.pages.update', {})
           if (_.get(resp, 'responseResult.succeeded')) {
+            this.checkoutDateActive = _.get(resp, 'page.updatedAt', this.checkoutDateActive)
+            this.isConflict = false
             this.$store.commit('showNotification', {
               message: this.$t('editor:save.updateSuccess'),
               style: 'success',
               icon: 'check'
             })
+            if (this.locale !== this.$store.get('page/locale') || this.path !== this.$store.get('page/path')) {
+              _.delay(() => {
+                window.location.replace(`/e/${this.$store.get('page/locale')}/${this.$store.get('page/path')}`)
+              }, 1000)
+            }
           } else {
             throw new Error(_.get(resp, 'responseResult.message'))
           }
@@ -259,11 +342,27 @@ export default {
           style: 'error',
           icon: 'warning'
         })
+        if (rethrow === true) {
+          clearTimeout(saveTimeoutHandle)
+          this.isSaving = false
+          this.hideProgressDialog()
+          throw err
+        }
       }
+      clearTimeout(saveTimeoutHandle)
+      this.isSaving = false
       this.hideProgressDialog()
     },
+    async saveAndClose() {
+      try {
+        await this.save({ rethrow: true })
+        await this.exit()
+      } catch (err) {
+        // Error is already handled
+      }
+    },
     async exit() {
-      if (this.initContentParsed !== this.$store.get('editor/content')) {
+      if (this.isDirty) {
         this.dialogUnsaved = true
       } else {
         this.exitGo()
@@ -281,6 +380,29 @@ export default {
         }
       }, 500)
     }
+  },
+  apollo: {
+    isConflict: {
+      query: gql`
+        query ($id: Int!, $checkoutDate: Date!) {
+          pages {
+            checkConflicts(id: $id, checkoutDate: $checkoutDate)
+          }
+        }
+      `,
+      fetchPolicy: 'network-only',
+      pollInterval: 5000,
+      variables () {
+        return {
+          id: this.pageId,
+          checkoutDate: this.checkoutDateActive
+        }
+      },
+      update: (data) => _.cloneDeep(data.pages.checkConflicts),
+      skip () {
+        return this.mode === 'create' || this.isSaving || !this.isDirty
+      }
+    }
   }
 }
 </script>
@@ -293,6 +415,10 @@ export default {
 
     .application--wrap {
       background-color: mc('grey', '900');
+    }
+
+    &-title-input input {
+      text-align: center;
     }
   }
 

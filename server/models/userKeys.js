@@ -45,7 +45,7 @@ module.exports = class UserKey extends Model {
   }
 
   static async generateToken ({ userId, kind }, context) {
-    const token = await nanoid()
+    const token = nanoid()
     await WIKI.models.userKeys.query().insert({
       kind,
       token,
@@ -56,7 +56,7 @@ module.exports = class UserKey extends Model {
   }
 
   static async validateToken ({ kind, token }, context) {
-    const res = await WIKI.models.userKeys.query().findOne({ kind, token }).eager('user')
+    const res = await WIKI.models.userKeys.query().findOne({ kind, token }).withGraphJoined('user')
     if (res) {
       await WIKI.models.userKeys.query().deleteById(res.id)
       if (moment.utc().isAfter(moment.utc(res.validUntil))) {

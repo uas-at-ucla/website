@@ -3,7 +3,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import VueClipboards from 'vue-clipboards'
-import VeeValidate from 'vee-validate'
 import { ApolloClient } from 'apollo-client'
 import { BatchHttpLink } from 'apollo-link-batch-http'
 import { ApolloLink, split } from 'apollo-link'
@@ -12,13 +11,12 @@ import { ErrorLink } from 'apollo-link-error'
 import { InMemoryCache } from 'apollo-cache-inmemory'
 import { getMainDefinition } from 'apollo-utilities'
 import VueApollo from 'vue-apollo'
-import Vuetify from 'vuetify'
+import Vuetify from 'vuetify/lib'
 import Velocity from 'velocity-animate'
 import Vuescroll from 'vuescroll/dist/vuescroll-native'
 import Hammer from 'hammerjs'
 import moment from 'moment'
 import VueMoment from 'vue-moment'
-import VueTour from 'vue-tour'
 import store from './store'
 import Cookies from 'js-cookie'
 
@@ -57,15 +55,17 @@ const graphQLWSEndpoint = ((window.location.protocol === 'https:') ? 'wss:' : 'w
 const graphQLLink = ApolloLink.from([
   new ErrorLink(({ graphQLErrors, networkError }) => {
     if (graphQLErrors) {
-      graphQLErrors.map(({ message, locations, path }) =>
-        console.error(
-          `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
-        )
-      )
+      let isAuthError = false
+      graphQLErrors.map(({ message, locations, path }) => {
+        if (message === `Forbidden`) {
+          isAuthError = true
+        }
+        console.error(`[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`)
+      })
       store.commit('showNotification', {
         style: 'red',
-        message: `An expected error occured.`,
-        icon: 'warning'
+        message: isAuthError ? `You are not authorized to access this resource.` : `An unexpected error occured.`,
+        icon: 'alert'
       })
     }
     if (networkError) {
@@ -73,7 +73,7 @@ const graphQLLink = ApolloLink.from([
       store.commit('showNotification', {
         style: 'red',
         message: `Network Error: ${networkError.message}`,
-        icon: 'error'
+        icon: 'alert'
       })
     }
   }),
@@ -138,13 +138,9 @@ Vue.use(VueApollo)
 Vue.use(VueClipboards)
 Vue.use(localization.VueI18Next)
 Vue.use(helpers)
-Vue.use(VeeValidate, { events: '' })
-Vue.use(Vuetify, {
-  rtl: siteConfig.rtl
-})
+Vue.use(Vuetify)
 Vue.use(VueMoment, { moment })
 Vue.use(Vuescroll)
-Vue.use(VueTour)
 
 Vue.prototype.Velocity = Velocity
 
@@ -159,12 +155,18 @@ Vue.component('page-source', () => import(/* webpackChunkName: "source" */ './co
 Vue.component('loader', () => import(/* webpackPrefetch: true, webpackChunkName: "ui-extra" */ './components/common/loader.vue'))
 Vue.component('login', () => import(/* webpackPrefetch: true, webpackChunkName: "login" */ './components/login.vue'))
 Vue.component('nav-header', () => import(/* webpackMode: "eager" */ './components/common/nav-header.vue'))
+Vue.component('new-page', () => import(/* webpackChunkName: "new-page" */ './components/new-page.vue'))
 Vue.component('notify', () => import(/* webpackMode: "eager" */ './components/common/notify.vue'))
+Vue.component('not-found', () => import(/* webpackChunkName: "not-found" */ './components/not-found.vue'))
 Vue.component('page-selector', () => import(/* webpackPrefetch: true, webpackChunkName: "ui-extra" */ './components/common/page-selector.vue'))
 Vue.component('profile', () => import(/* webpackChunkName: "profile" */ './components/profile.vue'))
 Vue.component('register', () => import(/* webpackChunkName: "register" */ './components/register.vue'))
-Vue.component('v-card-chin', () => import(/* webpackPrefetch: true, webpackChunkName: "ui-extra" */ './components/common/v-card-chin.vue'))
 Vue.component('search-results', () => import(/* webpackPrefetch: true, webpackChunkName: "ui-extra" */ './components/common/search-results.vue'))
+Vue.component('social-sharing', () => import(/* webpackPrefetch: true, webpackChunkName: "ui-extra" */ './components/common/social-sharing.vue'))
+Vue.component('tags', () => import(/* webpackChunkName: "tags" */ './components/tags.vue'))
+Vue.component('unauthorized', () => import(/* webpackChunkName: "unauthorized" */ './components/unauthorized.vue'))
+Vue.component('v-card-chin', () => import(/* webpackPrefetch: true, webpackChunkName: "ui-extra" */ './components/common/v-card-chin.vue'))
+Vue.component('welcome', () => import(/* webpackChunkName: "welcome" */ './components/welcome.vue'))
 
 Vue.component('nav-footer', () => import(/* webpackChunkName: "theme-page"  */ './themes/' + process.env.CURRENT_THEME + '/components/nav-footer.vue'))
 Vue.component('nav-sidebar', () => import(/* webpackChunkName: "theme-page" */ './themes/' + process.env.CURRENT_THEME + '/components/nav-sidebar.vue'))
@@ -194,7 +196,13 @@ let bootstrap = () => {
     mixins: [helpers],
     apolloProvider,
     store,
-    i18n
+    i18n,
+    vuetify: new Vuetify({
+      rtl: siteConfig.rtl,
+      theme: {
+        dark: siteConfig.darkMode
+      }
+    })
   })
 
   // ----------------------------------
@@ -208,14 +216,6 @@ let bootstrap = () => {
   // ====================================
 
   import(/* webpackChunkName: "theme-page"  */ './themes/' + process.env.CURRENT_THEME + '/js/app.js')
-
-  // ====================================
-  // Load Icons
-  // ====================================
-
-  // import(/* webpackChunkName: "icons" */ './svg/icons.svg').then(icons => {
-  //   document.body.insertAdjacentHTML('beforeend', icons.default)
-  // })
 }
 
 window.boot.onDOMReady(bootstrap)

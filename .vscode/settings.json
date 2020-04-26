@@ -1,6 +1,5 @@
 {
   "eslint.enable": true,
-  "eslint.autoFixOnSave": true,
   "puglint.enable": true,
   "editor.formatOnSave": false,
   "editor.tabSize": 2,

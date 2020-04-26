@@ -2,7 +2,9 @@ key: htmlTwemoji
 title: Twemoji
 description: Apply Twitter Emojis to all Unicode emojis
 author: requarks.io
-icon: whatshot
+icon: mdi-emoticon-happy-outline
 enabledDefault: true
 dependsOn: htmlCore
+step: post
+order: 10
 props: {}

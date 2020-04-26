@@ -6,25 +6,25 @@
           img.animated.fadeInUp(src='/svg/icon-customer.svg', alt='Users', style='width: 80px;')
           .admin-header-title
             .headline.blue--text.text--darken-2.animated.fadeInLeft Users
-            .subheading.grey--text.animated.fadeInLeft.wait-p2s Manage users #[v-chip(label, color='primary', small).white--text coming soon]
+            .subtitle-1.grey--text.animated.fadeInLeft.wait-p2s Manage users
           v-spacer
-          v-btn.animated.fadeInDown.wait-p2s(outline, color='grey', large, @click='refresh')
-            v-icon refresh
-          v-btn.animated.fadeInDown(color='primary', large, depressed, @click='createUser', disabled)
-            v-icon(left) add
+          v-btn.animated.fadeInDown.wait-p2s.mr-3(outlined, color='grey', large, @click='refresh')
+            v-icon mdi-refresh
+          v-btn.animated.fadeInDown(color='primary', large, depressed, @click='createUser')
+            v-icon(left) mdi-plus
             span New User
         v-card.wiki-form.mt-3.animated.fadeInUp
-          v-toolbar(flat, :color='$vuetify.dark ? `grey darken-3-d5` : `grey lighten-5`', height='80')
+          v-toolbar(flat, :color='$vuetify.theme.dark ? `grey darken-3-d5` : `grey lighten-5`', height='80')
             v-spacer
             v-text-field(
-              outline
+              outlined
               v-model='search'
-              prepend-inner-icon='search'
+              prepend-inner-icon='mdi-account-search-outline'
               label='Search Users...'
               hide-details
               )
             v-select.ml-2(
-              outline
+              outlined
               hide-details
               label='Identity Provider'
               :items='strategies'
@@ -39,45 +39,36 @@
             :items='usersFiltered',
             :headers='headers',
             :search='search',
-            :pagination.sync='pagination',
-            :rows-per-page-items='[15]'
+            :page.sync='pagination'
+            :items-per-page='15'
             :loading='loading'
-            hide-actions,
-            disable-initial-sort
-          )
-            template(slot='headers', slot-scope='props')
-              tr
-                th.text-xs-left(
-                  v-for='header in props.headers'
-                  :key='header.text'
-                  :width='header.width'
-                  :class='[`column`, header.sortable ? `sortable` : ``, pagination.descending ? `desc` : `asc`, header.value === pagination.sortBy ? `active` : ``]'
-                  @click='changeSort(header.value)'
-                )
-                  | {{ header.text }}
-                  v-icon(small, v-if='header.sortable') arrow_upward
-            template(slot='items', slot-scope='props')
+            @page-count='pageCount = $event'
+            hide-default-footer
+            )
+            template(slot='item', slot-scope='props')
               tr.is-clickable(:active='props.selected', @click='$router.push("/users/" + props.item.id)')
                 //- td
                   v-checkbox(hide-details, :input-value='props.selected', color='blue darken-2', @click='props.selected = !props.selected')
-                td.text-xs-right {{ props.item.id }}
+                td {{ props.item.id }}
                 td: strong {{ props.item.name }}
                 td {{ props.item.email }}
                 td {{ props.item.providerKey }}
                 td {{ props.item.createdAt | moment('from') }}
                 td
                   v-tooltip(left, v-if='props.item.isSystem')
-                    v-icon(slot='activator') lock_outline
+                    template(v-slot:activator='{ on }')
+                      v-icon(v-on='{ on }') mdi-lock-outline
                     span System User
             template(slot='no-data')
               .pa-3
-                v-alert(icon='warning', :value='true', outline) No users to display!
-          v-card-chin(v-if='this.pages > 1')
+                v-alert.text-left(icon='mdi-alert', outlined, color='grey')
+                  em.body-2 No users to display!
+          v-card-chin(v-if='pageCount > 1')
             v-spacer
-            v-pagination(v-model='pagination.page', :length='pages')
+            v-pagination(v-model='pagination', :length='pageCount')
             v-spacer
 
-    user-create(v-model='isCreateDialogShown')
+    user-create(v-model='isCreateDialogShown', @refresh='refresh(false)')
 </template>
 
 <script>
@@ -95,7 +86,8 @@ export default {
   data() {
     return {
       selected: [],
-      pagination: {},
+      pagination: 1,
+      pageCount: 0,
       users: [],
       headers: [
         { text: 'ID', value: 'id', width: 80, sortable: true },
@@ -116,40 +108,20 @@ export default {
     usersFiltered () {
       const all = this.filterStrategy === 'all' || this.filterStrategy === ''
       return _.filter(this.users, u => all || u.providerKey === this.filterStrategy)
-    },
-    pages () {
-      if (this.pagination.rowsPerPage == null || this.usersFiltered.length < 1) {
-        return 0
-      }
-
-      return Math.ceil(this.usersFiltered.length / this.pagination.rowsPerPage)
     }
   },
   methods: {
     createUser() {
       this.isCreateDialogShown = true
     },
-    async refresh() {
+    async refresh(notify = true) {
       await this.$apollo.queries.users.refetch()
-      this.$store.commit('showNotification', {
-        message: 'Users list has been refreshed.',
-        style: 'success',
-        icon: 'cached'
-      })
-    },
-    changeSort (column) {
-      if (this.pagination.sortBy === column) {
-        this.pagination.descending = !this.pagination.descending
-      } else {
-        this.pagination.sortBy = column
-        this.pagination.descending = false
-      }
-    },
-    toggleAll () {
-      if (this.selected.length) {
-        this.selected = []
-      } else {
-        this.selected = this.items.slice()
+      if (notify) {
+        this.$store.commit('showNotification', {
+          message: 'Users list has been refreshed.',
+          style: 'success',
+          icon: 'cached'
+        })
       }
     }
   },

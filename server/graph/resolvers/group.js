@@ -34,6 +34,13 @@ module.exports = {
       if (!usr) {
         throw new gql.GraphQLError('Invalid User ID')
       }
+      const relExist = await WIKI.models.knex('userGroups').where({
+        userId: args.userId,
+        groupId: args.groupId
+      }).first()
+      if (relExist) {
+        throw new gql.GraphQLError('User is already assigned to group.')
+      }
       await grp.$relatedQuery('users').relate(usr.id)
       return {
         responseResult: graphHelper.generateSuccess('User has been assigned to group.')
@@ -74,7 +81,7 @@ module.exports = {
       }
     },
     async update(obj, args) {
-      if(_.some(args.pageRules, pr => {
+      if (_.some(args.pageRules, pr => {
         return pr.match === 'REGEX' && !safeRegex(pr.path)
       })) {
         throw new gql.GraphQLError('Some Page Rules contains unsafe or exponential time regex.')

@@ -1,49 +1,64 @@
 <template lang="pug">
   v-dialog(v-model='isShown', max-width='650', persistent)
-    v-card.wiki-form
+    v-card
       .dialog-header.is-short
+        v-icon.mr-3(color='white') mdi-plus
         span New User
-      v-card-text
+        v-spacer
+        v-btn.mx-0(color='white', outlined, disabled, dark)
+          v-icon(left) mdi-database-import
+          span Bulk Import
+      v-card-text.pt-5
         v-select(
           :items='providers'
           item-text='title'
           item-value='key'
-          outline
-          prepend-icon='business'
+          outlined
+          prepend-icon='mdi-domain'
           v-model='provider'
           label='Provider'
           )
         v-text-field(
-          outline
-          prepend-icon='email'
+          outlined
+          prepend-icon='mdi-at'
           v-model='email'
           label='Email Address'
+          key='newUserEmail'
+          persistent-hint
           ref='emailInput'
           )
         v-text-field(
           v-if='provider === `local`'
-          outline
-          prepend-icon='lock'
-          append-icon='casino'
+          outlined
+          prepend-icon='mdi-lock-outline'
+          append-icon='mdi-dice-5'
           v-model='password'
           :label='mustChangePwd ? `Temporary Password` : `Password`'
           counter='255'
           @click:append='generatePwd'
+          key='newUserPassword'
+          persistent-hint
           )
         v-text-field(
-          outline
-          prepend-icon='person'
+          outlined
+          prepend-icon='mdi-account-outline'
           v-model='name'
           label='Name'
+          :hint='provider === `local` ? `Can be changed by the user.` : `May be overwritten by the provider during login.`'
+          key='newUserName'
+          persistent-hint
           )
-        v-select(
+        v-select.mt-2(
           :items='groups'
           item-text='name'
-          item-value='key'
-          outline
-          prepend-icon='people'
+          item-value='id'
+          item-disabled='isSystem'
+          outlined
+          prepend-icon='mdi-account-group'
           v-model='group'
           label='Assign to Group(s)...'
+          hint='Note that you cannot assign users to the Administrators or Guests groups from this dialog.'
+          persistent-hint
           clearable
           multiple
           )
@@ -60,19 +75,26 @@
           label='Send a welcome email'
           hide-details
           v-model='sendWelcomeEmail'
+          disabled
         )
       v-card-chin
         v-spacer
-        v-btn(flat, @click='isShown = false') Cancel
-        v-btn(color='primary', @click='newUser(true)') Create
-        v-btn(color='primary', @click='newUser(false)') Create and Close
+        v-btn(text, @click='isShown = false') Cancel
+        v-btn.px-3(depressed, color='primary', @click='newUser(false)')
+          v-icon(left) mdi-chevron-right
+          span Create
+        v-btn.px-3(depressed, color='primary', @click='newUser(true)')
+          v-icon(left) mdi-chevron-double-right
+          span Create and Close
 </template>
 
 <script>
-import uuidv4 from 'uuid/v4'
+import _ from 'lodash'
+import validate from 'validate.js'
 
+import createUserMutation from 'gql/admin/users/users-mutation-create.gql'
 import providersQuery from 'gql/admin/users/users-query-strategies.gql'
-import groupsQuery from 'gql/admin/auth/auth-query-groups.gql'
+import groupsQuery from 'gql/admin/users/users-query-groups.gql'
 
 export default {
   props: {
@@ -89,7 +111,7 @@ export default {
       password: '',
       name: '',
       groups: [],
-      group: '',
+      group: [],
       mustChangePwd: false,
       sendWelcomeEmail: false
     }
@@ -110,11 +132,97 @@ export default {
     }
   },
   methods: {
-    async newUser() {
-      this.isShown = false
+    async newUser(close = false) {
+      let rules = {
+        email: {
+          presence: {
+            allowEmpty: false
+          },
+          email: true
+        },
+        name: {
+          presence: {
+            allowEmpty: false
+          },
+          length: {
+            minimum: 2,
+            maximum: 255
+          }
+        }
+      }
+      if (this.provider === `local`) {
+        rules.password = {
+          presence: {
+            allowEmpty: false
+          },
+          length: {
+            minimum: 6,
+            maximum: 255
+          }
+        }
+      }
+      const validationResults = validate({
+        email: this.email,
+        password: this.password,
+        name: this.name
+      }, rules, { format: 'flat' })
+
+      if (validationResults) {
+        this.$store.commit('showNotification', {
+          style: 'red',
+          message: validationResults[0],
+          icon: 'alert'
+        })
+        return
+      }
+
+      try {
+        const resp = await this.$apollo.mutate({
+          mutation: createUserMutation,
+          variables: {
+            providerKey: this.provider,
+            email: this.email,
+            passwordRaw: this.password,
+            name: this.name,
+            groups: this.group,
+            mustChangePassword: this.mustChangePwd,
+            sendWelcomeEmail: this.sendWelcomeEmail
+          },
+          watchLoading (isLoading) {
+            this.$store.commit(`loading${isLoading ? 'Start' : 'Stop'}`, 'admin-users-create')
+          }
+        })
+        if (_.get(resp, 'data.users.create.responseResult.succeeded', false)) {
+          this.$store.commit('showNotification', {
+            style: 'success',
+            message: 'New user created successfully.',
+            icon: 'check'
+          })
+
+          this.email = ''
+          this.password = ''
+          this.name = ''
+
+          if (close) {
+            this.isShown = false
+            this.$emit('refresh')
+          } else {
+            this.$refs.emailInput.focus()
+          }
+        } else {
+          this.$store.commit('showNotification', {
+            style: 'red',
+            message: _.get(resp, 'data.users.create.responseResult.message', 'An unexpected error occured.'),
+            icon: 'alert'
+          })
+        }
+      } catch (err) {
+        this.$store.commit('pushGraphError', err)
+      }
     },
     generatePwd() {
-      this.password = uuidv4().slice(-12)
+      const pwdChars = 'abcdefghkmnpqrstuvwxyzABCDEFHJKLMNPQRSTUVWXYZ23456789_*=?#!()+'
+      this.password = _.sampleSize(pwdChars, 12).join('')
     }
   },
   apollo: {

@@ -97,7 +97,7 @@ module.exports = {
           }
 
           // Check source asset permissions
-          const assetSourcePath = (asset.folderId) ? hierarchy.map(h => h.slug).join('/') + `/${filename}` : filename
+          const assetSourcePath = (asset.folderId) ? hierarchy.map(h => h.slug).join('/') + `/${asset.filename}` : asset.filename
           if (!WIKI.auth.checkAccess(context.req.user, ['manage:assets'], { path: assetSourcePath })) {
             throw new WIKI.Error.AssetRenameForbidden()
           }
@@ -118,6 +118,19 @@ module.exports = {
           // Delete old asset cache
           await asset.deleteAssetCache()
 
+          // Rename in Storage
+          await WIKI.models.storage.assetEvent({
+            event: 'renamed',
+            asset: {
+              ...asset,
+              path: assetSourcePath,
+              destinationPath: assetTargetPath,
+              moveAuthorId: context.req.user.id,
+              moveAuthorName: context.req.user.name,
+              moveAuthorEmail: context.req.user.email
+            }
+          })
+
           return {
             responseResult: graphHelper.generateSuccess('Asset has been renamed successfully.')
           }
@@ -136,7 +149,7 @@ module.exports = {
         const asset = await WIKI.models.assets.query().findById(args.id)
         if (asset) {
           // Check permissions
-          const assetPath = asset.getAssetPath()
+          const assetPath = await asset.getAssetPath()
           if (!WIKI.auth.checkAccess(context.req.user, ['manage:assets'], { path: assetPath })) {
             throw new WIKI.Error.AssetDeleteForbidden()
           }
@@ -144,6 +157,18 @@ module.exports = {
           await WIKI.models.knex('assetData').where('id', args.id).del()
           await WIKI.models.assets.query().deleteById(args.id)
           await asset.deleteAssetCache()
+
+          // Delete from Storage
+          await WIKI.models.storage.assetEvent({
+            event: 'deleted',
+            asset: {
+              ...asset,
+              path: assetPath,
+              authorId: context.req.user.id,
+              authorName: context.req.user.name,
+              authorEmail: context.req.user.email
+            }
+          })
 
           return {
             responseResult: graphHelper.generateSuccess('Asset has been deleted successfully.')

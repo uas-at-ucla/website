@@ -1,7 +1,6 @@
 const passport = require('passport')
 const passportJWT = require('passport-jwt')
 const _ = require('lodash')
-const path = require('path')
 const jwt = require('jsonwebtoken')
 const moment = require('moment')
 const Promise = require('bluebird')
@@ -18,6 +17,7 @@ module.exports = {
     cacheExpiration: moment.utc().subtract(1, 'd')
   },
   groups: {},
+  validApiKeys: [],
 
   /**
    * Initialize the authentication module
@@ -31,7 +31,7 @@ module.exports = {
 
     passport.deserializeUser(async (id, done) => {
       try {
-        const user = await WIKI.models.users.query().findById(id).modifyEager('groups', builder => {
+        const user = await WIKI.models.users.query().findById(id).withGraphFetched('groups').modifyGraph('groups', builder => {
           builder.select('groups.id', 'permissions')
         })
         if (user) {
@@ -45,6 +45,7 @@ module.exports = {
     })
 
     this.reloadGroups()
+    this.reloadApiKeys()
 
     return this
   },
@@ -65,7 +66,8 @@ module.exports = {
         jwtFromRequest: securityHelper.extractJWT,
         secretOrKey: WIKI.config.certs.public,
         audience: WIKI.config.auth.audience,
-        issuer: 'urn:wiki.js'
+        issuer: 'urn:wiki.js',
+        algorithms: ['RS256']
       }, (jwtPayload, cb) => {
         cb(null, jwtPayload)
       }))
@@ -120,8 +122,8 @@ module.exports = {
           } else {
             res.cookie('jwt', newToken.token, { expires: moment().add(365, 'days').toDate() })
           }
-        } catch (err) {
-          WIKI.logger.warn(err)
+        } catch (errc) {
+          WIKI.logger.warn(errc)
           return next()
         }
       }
@@ -136,9 +138,36 @@ module.exports = {
         return next()
       }
 
+      // Process API tokens
+      if (_.has(user, 'api')) {
+        if (!WIKI.config.api.isEnabled) {
+          return next(new Error('API is disabled. You must enable it from the Administration Area first.'))
+        } else if (_.includes(WIKI.auth.validApiKeys, user.api)) {
+          req.user = {
+            id: 1,
+            email: 'api@localhost',
+            name: 'API',
+            pictureUrl: null,
+            timezone: 'America/New_York',
+            localeCode: 'en',
+            permissions: _.get(WIKI.auth.groups, `${user.grp}.permissions`, []),
+            groups: [user.grp],
+            getGlobalPermissions () {
+              return req.user.permissions
+            },
+            getGroups () {
+              return req.user.groups
+            }
+          }
+          return next()
+        } else {
+          return next(new Error('API Key is invalid or was revoked.'))
+        }
+      }
+
       // JWT is valid
-      req.logIn(user, { session: false }, (err) => {
-        if (err) { return next(err) }
+      req.logIn(user, { session: false }, (errc) => {
+        if (errc) { return next(errc) }
         next()
       })
     })(req, res, next)
@@ -165,7 +194,7 @@ module.exports = {
     }
 
     // Check Page Rules
-    if (path && user.groups) {
+    if (page && user.groups) {
       let checkState = {
         deny: false,
         match: false,
@@ -174,28 +203,41 @@ module.exports = {
       user.groups.forEach(grp => {
         const grpId = _.isObject(grp) ? _.get(grp, 'id', 0) : grp
         _.get(WIKI.auth.groups, `${grpId}.pageRules`, []).forEach(rule => {
-          switch (rule.match) {
-            case 'START':
-              if (_.startsWith(`/${page.path}`, `/${rule.path}`)) {
-                checkState = this._applyPageRuleSpecificity({ rule, checkState, higherPriority: ['END', 'REGEX', 'EXACT'] })
-              }
-              break
-            case 'END':
-              if (_.endsWith(page.path, rule.path)) {
-                checkState = this._applyPageRuleSpecificity({ rule, checkState, higherPriority: ['REGEX', 'EXACT'] })
-              }
-              break
-            case 'REGEX':
-              const reg = new RegExp(rule.path)
-              if (reg.test(page.path)) {
-                checkState = this._applyPageRuleSpecificity({ rule, checkState, higherPriority: ['EXACT'] })
-              }
-              break
-            case 'EXACT':
-              if (`/${page.path}` === `/${rule.path}`) {
-                checkState = this._applyPageRuleSpecificity({ rule, checkState, higherPriority: [] })
-              }
-              break
+          if (_.intersection(rule.roles, permissions).length > 0) {
+            switch (rule.match) {
+              case 'START':
+                if (_.startsWith(`/${page.path}`, `/${rule.path}`)) {
+                  checkState = this._applyPageRuleSpecificity({ rule, checkState, higherPriority: ['END', 'REGEX', 'EXACT', 'TAG'] })
+                }
+                break
+              case 'END':
+                if (_.endsWith(page.path, rule.path)) {
+                  checkState = this._applyPageRuleSpecificity({ rule, checkState, higherPriority: ['REGEX', 'EXACT', 'TAG'] })
+                }
+                break
+              case 'REGEX':
+                const reg = new RegExp(rule.path)
+                if (reg.test(page.path)) {
+                  checkState = this._applyPageRuleSpecificity({ rule, checkState, higherPriority: ['EXACT', 'TAG'] })
+                }
+                break
+              case 'TAG':
+                _.get(page, 'tags', []).forEach(tag => {
+                  if (tag.tag === rule.path) {
+                    checkState = this._applyPageRuleSpecificity({
+                      rule,
+                      checkState,
+                      higherPriority: ['EXACT']
+                    })
+                  }
+                })
+                break
+              case 'EXACT':
+                if (`/${page.path}` === `/${rule.path}`) {
+                  checkState = this._applyPageRuleSpecificity({ rule, checkState, higherPriority: [] })
+                }
+                break
+            }
           }
         })
       })
@@ -236,15 +278,23 @@ module.exports = {
   /**
    * Reload Groups from DB
    */
-  async reloadGroups() {
+  async reloadGroups () {
     const groupsArray = await WIKI.models.groups.query()
     this.groups = _.keyBy(groupsArray, 'id')
   },
 
   /**
+   * Reload valid API Keys from DB
+   */
+  async reloadApiKeys () {
+    const keys = await WIKI.models.apiKeys.query().select('id').where('isRevoked', false).andWhere('expiration', '>', moment.utc().toISOString())
+    this.validApiKeys = _.map(keys, 'id')
+  },
+
+  /**
    * Generate New Authentication Public / Private Key Certificates
    */
-  async regenerateCertificates() {
+  async regenerateCertificates () {
     WIKI.logger.info('Regenerating certificates...')
 
     _.set(WIKI.config, 'sessionSecret', (await crypto.randomBytesAsync(32)).toString('hex'))

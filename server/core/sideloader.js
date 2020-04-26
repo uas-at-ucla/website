@@ -10,7 +10,7 @@ module.exports = {
       return
     }
 
-    const sideloadExists = await fs.pathExists(path.join(WIKI.ROOTPATH, 'data/sideload'))
+    const sideloadExists = await fs.pathExists(path.resolve(WIKI.ROOTPATH, WIKI.config.dataPath, 'sideload'))
 
     if (!sideloadExists) {
       return
@@ -25,16 +25,16 @@ module.exports = {
     }
   },
   async importLocales() {
-    const localeExists = await fs.pathExists(path.join(WIKI.ROOTPATH, 'data/sideload/locales.json'))
+    const localeExists = await fs.pathExists(path.resolve(WIKI.ROOTPATH, WIKI.config.dataPath, 'sideload/locales.json'))
     if (localeExists) {
       WIKI.logger.info('Found locales master file. Importing locale packages...')
       let importedLocales = 0
 
-      const locales = await fs.readJson(path.join(WIKI.ROOTPATH, 'data/sideload/locales.json'))
+      const locales = await fs.readJson(path.resolve(WIKI.ROOTPATH, WIKI.config.dataPath, 'sideload/locales.json'))
       if (locales && _.has(locales, 'data.localization.locales')) {
         for (const locale of locales.data.localization.locales) {
           try {
-            const localeData = await fs.readJson(path.join(WIKI.ROOTPATH, `data/sideload/${locale.code}.json`))
+            const localeData = await fs.readJson(path.resolve(WIKI.ROOTPATH, WIKI.config.dataPath, `sideload/${locale.code}.json`))
             if (localeData) {
               WIKI.logger.info(`Importing ${locale.name} locale package...`)
 
@@ -45,8 +45,8 @@ module.exports = {
                 _.set(lcObj, key.replace(':', '.'), value)
               })
 
-              const localeExists = await WIKI.models.locales.query().select('code').where('code', locale.code).first()
-              if (localeExists) {
+              const localeDbExists = await WIKI.models.locales.query().select('code').where('code', locale.code).first()
+              if (localeDbExists) {
                 await WIKI.models.locales.query().update({
                   code: locale.code,
                   strings: lcObj,

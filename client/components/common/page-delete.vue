@@ -1,21 +1,27 @@
 <template lang='pug'>
-  v-dialog(v-model='isShown', max-width='550', persistent)
-    v-card.wiki-form
+  v-dialog(
+    v-model='isShown'
+    max-width='550'
+    persistent
+    overlay-color='red darken-4'
+    overlay-opacity='.7'
+    )
+    v-card
       .dialog-header.is-short.is-red
-        v-icon.mr-2(color='white') highlight_off
+        v-icon.mr-2(color='white') mdi-file-document-box-remove-outline
         span {{$t('common:page.delete')}}
-      v-card-text
-        i18next.body-2(path='common:page.deleteTitle', tag='div')
+      v-card-text.pt-5
+        i18next.body-1(path='common:page.deleteTitle', tag='div')
           span.red--text.text--darken-2(place='title') {{pageTitle}}
         .caption {{$t('common:page.deleteSubtitle')}}
-        v-chip.mt-3.ml-0.mr-1(label, color='red lighten-4', disabled, small)
+        v-chip.mt-3.ml-0.mr-1(label, color='red lighten-4', small)
           .caption.red--text.text--darken-2 {{pageLocale.toUpperCase()}}
-        v-chip.mt-3.mx-0(label, color='red lighten-5', disabled, small)
+        v-chip.mt-3.mx-0(label, color='red lighten-5', small)
           span.red--text.text--darken-2 /{{pagePath}}
       v-card-chin
         v-spacer
-        v-btn(flat, @click='discard', :disabled='loading') {{$t('common:actions.cancel')}}
-        v-btn(color='red darken-2', @click='deletePage', :loading='loading').white--text {{$t('common:actions.delete')}}
+        v-btn(text, @click='discard', :disabled='loading') {{$t('common:actions.cancel')}}
+        v-btn.px-4(color='red darken-2', @click='deletePage', :loading='loading').white--text {{$t('common:actions.delete')}}
 </template>
 
 <script>

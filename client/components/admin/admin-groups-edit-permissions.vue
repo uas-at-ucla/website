@@ -1,30 +1,30 @@
 <template lang="pug">
-  v-card.wiki-form(flat)
+  v-card(flat)
     v-card-text
       v-text-field(
-        outline
-        background-color='grey lighten-3'
+        outlined
         v-model='group.name'
         label='Group Name'
         counter='255'
-        prepend-icon='people'
+        prepend-icon='mdi-account-group'
         )
       v-alert.radius-7(
         v-if='group.isSystem'
         color='orange darken-2'
-        :class='$vuetify.dark ? "grey darken-4" : "orange lighten-5"'
-        outline
+        :class='$vuetify.theme.dark ? "grey darken-4" : "orange lighten-5"'
+        outlined
         :value='true'
-        icon='lock_outline'
+        icon='mdi-lock-outline'
         ) This is a system group. Some permissions cannot be modified.
     v-container.px-3.pb-3.pt-0(fluid, grid-list-md)
       v-layout(row, wrap)
         v-flex(xs12, md6, lg4, v-for='pmGroup in permissions', :key='pmGroup.category')
-          v-card.md2(flat, :class='$vuetify.dark ? "grey darken-3-d5" : "white"')
-            v-subheader {{pmGroup.category}}
+          v-card.md2(flat, :class='$vuetify.theme.dark ? "grey darken-3-d5" : "grey lighten-5"')
+            .overline.px-5.pt-5.pb-3.grey--text.text--darken-2 {{pmGroup.category}}
             v-card-text.pt-0
               template(v-for='(pm, idx) in pmGroup.items')
                 v-checkbox.pt-0(
+                  style='justify-content: space-between;'
                   :key='pm.permission'
                   :label='pm.permission'
                   :hint='pm.hint'
@@ -32,7 +32,7 @@
                   color='primary'
                   v-model='group.permissions'
                   :value='pm.permission'
-                  :append-icon='pm.warning ? "warning" : null',
+                  :append-icon='pm.warning ? "mdi-alert" : null',
                   :disabled='(group.isSystem && pm.restrictedForSystem) || group.id === 1 || pm.disabled'
                 )
                 v-divider.mt-3(v-if='idx < pmGroup.items.length - 1')
@@ -42,7 +42,8 @@
 export default {
   props: {
     value: {
-      type: Object
+      type: Object,
+      default: () => ({})
     }
   },
   data() {
@@ -60,14 +61,14 @@ export default {
             },
             {
               permission: 'write:pages',
-              hint: 'Can create new pages, as specified in the Page Rules',
+              hint: 'Can create / edit pages, as specified in the Page Rules',
               warning: false,
               restrictedForSystem: false,
               disabled: false
             },
             {
               permission: 'manage:pages',
-              hint: 'Can edit and move existing pages as specified in the Page Rules',
+              hint: 'Can move existing pages as specified in the Page Rules',
               warning: false,
               restrictedForSystem: false,
               disabled: false

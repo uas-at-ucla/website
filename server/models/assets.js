@@ -74,7 +74,7 @@ module.exports = class Asset extends Model {
   }
 
   async deleteAssetCache() {
-    await fs.remove(path.join(process.cwd(), `data/cache/${this.hash}.dat`))
+    await fs.remove(path.resolve(WIKI.ROOTPATH, WIKI.config.dataPath, `cache/${this.hash}.dat`))
   }
 
   static async upload(opts) {
@@ -95,8 +95,7 @@ module.exports = class Asset extends Model {
       kind: _.startsWith(opts.mimetype, 'image/') ? 'image' : 'binary',
       mime: opts.mimetype,
       fileSize: opts.size,
-      folderId: opts.folderId,
-      authorId: opts.userId
+      folderId: opts.folderId
     }
 
     // Save asset data
@@ -105,6 +104,9 @@ module.exports = class Asset extends Model {
 
       if (asset) {
         // Patch existing asset
+        if (opts.mode === 'upload') {
+          assetRow.authorId = opts.user.id
+        }
         await WIKI.models.assets.query().patch(assetRow).findById(asset.id)
         await WIKI.models.knex('assetData').where({
           id: asset.id
@@ -113,18 +115,38 @@ module.exports = class Asset extends Model {
         })
       } else {
         // Create asset entry
+        assetRow.authorId = opts.user.id
         asset = await WIKI.models.assets.query().insert(assetRow)
         await WIKI.models.knex('assetData').insert({
           id: asset.id,
           data: fileBuffer
         })
       }
+
+      // Move temp upload to cache
+      if (opts.mode === 'upload') {
+        await fs.move(opts.path, path.resolve(WIKI.ROOTPATH, WIKI.config.dataPath, `cache/${fileHash}.dat`), { overwrite: true })
+      } else {
+        await fs.copy(opts.path, path.resolve(WIKI.ROOTPATH, WIKI.config.dataPath, `cache/${fileHash}.dat`), { overwrite: true })
+      }
+
+      // Add to Storage
+      if (!opts.skipStorage) {
+        await WIKI.models.storage.assetEvent({
+          event: 'uploaded',
+          asset: {
+            ...asset,
+            path: await asset.getAssetPath(),
+            data: fileBuffer,
+            authorId: opts.user.id,
+            authorName: opts.user.name,
+            authorEmail: opts.user.email
+          }
+        })
+      }
     } catch (err) {
       WIKI.logger.warn(err)
     }
-
-    // Move temp upload to cache
-    await fs.move(opts.path, path.join(process.cwd(), `data/cache/${fileHash}.dat`), { overwrite: true })
   }
 
   static async getAsset(assetPath, res) {
@@ -136,7 +158,7 @@ module.exports = class Asset extends Model {
 
   static async getAssetFromCache(assetPath, res) {
     const fileHash = assetHelper.generateHash(assetPath)
-    const cachePath = path.join(process.cwd(), `data/cache/${fileHash}.dat`)
+    const cachePath = path.resolve(WIKI.ROOTPATH, WIKI.config.dataPath, `cache/${fileHash}.dat`)
 
     return new Promise((resolve, reject) => {
       res.type(path.extname(assetPath))
@@ -152,7 +174,7 @@ module.exports = class Asset extends Model {
 
   static async getAssetFromDb(assetPath, res) {
     const fileHash = assetHelper.generateHash(assetPath)
-    const cachePath = path.join(process.cwd(), `data/cache/${fileHash}.dat`)
+    const cachePath = path.resolve(WIKI.ROOTPATH, WIKI.config.dataPath, `cache/${fileHash}.dat`)
 
     const asset = await WIKI.models.assets.query().where('hash', fileHash).first()
     if (asset) {
@@ -166,6 +188,6 @@ module.exports = class Asset extends Model {
   }
 
   static async flushTempUploads() {
-    return fs.emptyDir(path.join(process.cwd(), `data/uploads`))
+    return fs.emptyDir(path.resolve(WIKI.ROOTPATH, WIKI.config.dataPath, `uploads`))
   }
 }

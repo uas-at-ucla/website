@@ -30,24 +30,13 @@ module.exports = {
         if (opts.path) {
           builder.andWhere('path', 'like', `${opts.path}%`)
         }
-        // TODO: Add user permissions filtering
-        builder.andWhere(builder => {
-          switch (WIKI.config.db.type) {
-            case 'postgres':
-              builder.where('title', 'ILIKE', `%${q}%`)
-              builder.orWhere('description', 'ILIKE', `%${q}%`)
-              break
-            case 'mysql':
-            case 'mariadb':
-              builder.whereRaw(`title LIKE '%?%' COLLATE utf8_general_ci`, [q])
-              builder.orWhereRaw(`description LIKE '%?%' COLLATE utf8_general_ci`, [q])
-              break
-
-            // TODO: MSSQL handling
-            default:
-              builder.where('title', 'LIKE', `%${q}%`)
-              builder.orWhere('description', 'LIKE', `%${q}%`)
-              break
+        builder.andWhere(builderSub => {
+          if (WIKI.config.db.type === 'postgres') {
+            builderSub.where('title', 'ILIKE', `%${q}%`)
+            builderSub.orWhere('description', 'ILIKE', `%${q}%`)
+          } else {
+            builderSub.where('title', 'LIKE', `%${q}%`)
+            builderSub.orWhere('description', 'LIKE', `%${q}%`)
           }
         })
       })

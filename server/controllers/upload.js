@@ -11,7 +11,7 @@ const sanitize = require('sanitize-filename')
  * Upload files
  */
 router.post('/u', multer({
-  dest: path.join(WIKI.ROOTPATH, 'data/uploads'),
+  dest: path.resolve(WIKI.ROOTPATH, WIKI.config.dataPath, 'uploads'),
   limits: {
     fileSize: WIKI.config.uploads.maxFileSize,
     files: WIKI.config.uploads.maxFiles
@@ -88,9 +88,10 @@ router.post('/u', multer({
   // Process upload file
   await WIKI.models.assets.upload({
     ...fileMeta,
+    mode: 'upload',
     folderId: folderId,
     assetPath,
-    userId: req.user.id
+    user: req.user
   })
   res.send('ok')
 })

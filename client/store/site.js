@@ -4,9 +4,11 @@ import { make } from 'vuex-pathify'
 
 const state = {
   company: siteConfig.company,
+  contentLicense: siteConfig.contentLicense,
   dark: siteConfig.darkMode,
   mascot: true,
   title: siteConfig.title,
+  logoUrl: siteConfig.logoUrl,
   search: '',
   searchIsFocused: false,
   searchIsLoading: false,

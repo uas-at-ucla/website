@@ -15,9 +15,11 @@ module.exports = {
         host: WIKI.config.host,
         title: WIKI.config.title,
         company: WIKI.config.company,
+        contentLicense: WIKI.config.contentLicense,
+        logoUrl: WIKI.config.logoUrl,
         ...WIKI.config.seo,
-        ...WIKI.config.logo,
-        ...WIKI.config.features
+        ...WIKI.config.features,
+        ...WIKI.config.security
       }
     }
   },
@@ -27,22 +29,36 @@ module.exports = {
         WIKI.config.host = args.host
         WIKI.config.title = args.title
         WIKI.config.company = args.company
+        WIKI.config.contentLicense = args.contentLicense
         WIKI.config.seo = {
           description: args.description,
           robots: args.robots,
           analyticsService: args.analyticsService,
           analyticsId: args.analyticsId
         }
-        WIKI.config.logo = {
-          hasLogo: args.hasLogo,
-          logoIsSquare: args.logoIsSquare
-        }
+        WIKI.config.logoUrl = args.logoUrl
         WIKI.config.features = {
           featurePageRatings: args.featurePageRatings,
           featurePageComments: args.featurePageComments,
           featurePersonalWikis: args.featurePersonalWikis
         }
-        await WIKI.configSvc.saveToDb(['host', 'title', 'company', 'seo', 'logo', 'features'])
+        WIKI.config.security = {
+          securityIframe: args.securityIframe,
+          securityReferrerPolicy: args.securityReferrerPolicy,
+          securityTrustProxy: args.securityTrustProxy,
+          securitySRI: args.securitySRI,
+          securityHSTS: args.securityHSTS,
+          securityHSTSDuration: args.securityHSTSDuration,
+          securityCSP: args.securityCSP,
+          securityCSPDirectives: args.securityCSPDirectives
+        }
+        await WIKI.configSvc.saveToDb(['host', 'title', 'company', 'contentLicense', 'seo', 'logoUrl', 'features', 'security'])
+
+        if (WIKI.config.security.securityTrustProxy) {
+          WIKI.app.enable('trust proxy')
+        } else {
+          WIKI.app.disable('trust proxy')
+        }
 
         return {
           responseResult: graphHelper.generateSuccess('Site configuration updated successfully')

@@ -2,6 +2,7 @@ import { make } from 'vuex-pathify'
 
 const state = {
   editor: '',
+  editorKey: '',
   content: '',
   mode: 'create',
   activeModal: '',
@@ -9,7 +10,8 @@ const state = {
     folderTree: [],
     currentFolderId: 0,
     currentFileId: null
-  }
+  },
+  checkoutDateActive: ''
 }
 
 export default {
@@ -17,11 +19,11 @@ export default {
   state,
   mutations: {
     ...make.mutations(state),
-    pushMediaFolderTree: (state, folder) => {
-      state.media.folderTree = state.media.folderTree.concat(folder)
+    pushMediaFolderTree: (st, folder) => {
+      st.media.folderTree = st.media.folderTree.concat(folder)
     },
-    popMediaFolderTree: (state) => {
-      state.media.folderTree = state.media.folderTree.slice(0, -1)
+    popMediaFolderTree: (st) => {
+      st.media.folderTree = st.media.folderTree.slice(0, -1)
     }
   }
 }
