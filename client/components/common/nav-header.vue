@@ -233,6 +233,9 @@ span
             v-icon {{page.icon}}
           v-list-item-content
             v-list-item-title {{page.title}}
+
+  //- dummy element so transition CSS doesn't get optimized out
+  div.expand-enter-active.expand-leave-active.expand-enter.expand-leave-to(style='display: none;')
 </template>
 
 <script>
@@ -555,7 +558,7 @@ export default {
 }
 
 .expand-enter-active, .expand-leave-active {
-  max-height: 368px;
+  max-height: 100%;
   overflow: hidden;
   transition: max-height .2s;
 }
