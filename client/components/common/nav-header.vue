@@ -555,7 +555,7 @@ export default {
 }
 
 .expand-enter-active, .expand-leave-active {
-  max-height: 100%;
+  max-height: 368px;
   overflow: hidden;
   transition: max-height .2s;
 }
