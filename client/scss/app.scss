@@ -1,3 +1,20 @@
+@import "~bootstrap/scss/functions";
+@import "~bootstrap/scss/variables";
+@import "~bootstrap/scss/mixins";
+
+@import "~bootstrap/scss/utilities";
+@import "~bootstrap/scss/grid";
+@import "~bootstrap/scss/nav";
+@import "~bootstrap/scss/list-group";
+@import "~bootstrap/scss/tables";
+@import "~bootstrap/scss/transitions";
+@import "~bootstrap/scss/buttons";
+@import "~bootstrap/scss/card";
+@import "~bootstrap/scss/images";
+@import "~bootstrap/scss/carousel";
+@import "~bootstrap/scss/progress";
+// Add more bootstrap features here
+
 @import "global";
 
 @import "base/base";
