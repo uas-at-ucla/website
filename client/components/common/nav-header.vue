@@ -325,10 +325,12 @@ export default {
     this.searchIsShown = false
     // }
 
-    document.addEventListener('ontouchstart' in document.documentElement ? 'touchstart' : 'click', this.touchStart)
+    document.addEventListener('click', this.touchStart)
+    document.addEventListener('scroll', this.touchStart)
   },
   destroyed() {
-    document.removeEventListener('ontouchstart' in document.documentElement ? 'touchstart' : 'click', this.touchStart)
+    document.removeEventListener('click', this.touchStart)
+    document.removeEventListener('scroll', this.touchStart)
   },
   mounted () {
     this.$root.$on('pageEdit', () => {
