@@ -3,7 +3,8 @@
     .caption.grey--text.text--darken-1
       span
         b UAS@UCLA {{ currentYear }}.{{" "}}
-        span {{ "A division of AIAA at UCLA." }}
+        span {{ "A division of AIAA at UCLA. " }}
+        a(href='https://github.com/uas-at-ucla/website' style='color: inherit; text-decoration: underline;') Source code
 </template>
 
 <script>
