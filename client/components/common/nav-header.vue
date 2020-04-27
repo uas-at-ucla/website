@@ -102,6 +102,8 @@ span
             v-if='!hideSearch/* && $vuetify.breakpoint.smAndDown*/ && mode !== `edit`'
             @click='searchToggle'
             icon
+            id='search-btn'
+            tabindex=0
             )
             v-icon(color='grey') mdi-magnify
 
@@ -220,7 +222,7 @@ span
         .overline DEVELOPMENT VERSION
         .overline This code base is NOT for production use!
 
-  transition(name='expand')
+  transition(name='expand-y')
     v-list.hidden-md-and-up(id='mobile-nav' v-if='mode !== `edit` && mobileNavOpen' dark style='position: fixed; width: 100%; margin-top: 56px; margin-bottom: -56px; z-index: 100; border-radius: 0;')
       v-list-item-group
         v-list-item(@click='goHome')
@@ -233,9 +235,6 @@ span
             v-icon {{page.icon}}
           v-list-item-content
             v-list-item-title {{page.title}}
-
-  //- dummy element so transition CSS doesn't get optimized out
-  div.expand-enter-active.expand-leave-active.expand-enter.expand-leave-to(style='display: none;')
 </template>
 
 <script>
@@ -353,8 +352,10 @@ export default {
     searchFocus () {
       this.searchIsFocused = true
     },
-    searchBlur () {
-      this.searchIsFocused = false
+    searchBlur (event) {
+      if (!event || !event.relatedTarget || event.relatedTarget.id !== 'search-btn') {
+        this.searchIsFocused = false
+      }
     },
     searchClose () {
       this.search = ''
@@ -362,11 +363,14 @@ export default {
       this.searchIsShown = false
     },
     searchToggle () {
-      this.searchIsShown = !this.searchIsShown
-      if (this.searchIsShown) {
+      // this.searchIsShown = !this.searchIsShown
+      if (!this.searchIsShown) {
+        this.searchIsShown = true
         _.delay(() => {
           this.$refs.searchFieldMobile.focus()
         }, 200)
+      } else {
+        this.searchClose()
       }
     },
     searchEnter () {
@@ -557,13 +561,15 @@ export default {
   padding: 0 14px !important;
 }
 
-.expand-enter-active, .expand-leave-active {
-  max-height: 100%;
-  overflow: hidden;
-  transition: max-height .2s;
-}
-.expand-enter, .expand-leave-to {
-  max-height: 0;
+#mobile-nav.expand-y {
+  &-enter-active, &-leave-active {
+    max-height: 100%;
+    overflow: hidden;
+    transition: max-height .2s;
+  }
+  &-enter, &-leave-to {
+    max-height: 0;
+  }
 }
 
 </style>
