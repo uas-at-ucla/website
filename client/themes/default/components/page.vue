@@ -218,7 +218,7 @@
     search-results
     v-fab-transition
       v-btn(
-        v-if='!isMainPage && upBtnShown'
+        v-if='upBtnShown'
         fab
         fixed
         bottom
@@ -389,10 +389,14 @@ export default {
     },
     pageUrl () { return window.location.href },
     upBtnPosition () {
-      if (this.$vuetify.breakpoint.mdAndUp) {
-        return this.$vuetify.rtl ? `right: 235px;` : `left: 235px;`
+      if (!this.isMainPage) {
+        if (this.$vuetify.breakpoint.mdAndUp) {
+          return this.$vuetify.rtl ? `right: 235px;` : `left: 235px;`
+        } else {
+          return this.$vuetify.rtl ? `right: 65px;` : `left: 65px;`
+        }
       } else {
-        return this.$vuetify.rtl ? `right: 65px;` : `left: 65px;`
+        return ``;
       }
     }
   },
