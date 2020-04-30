@@ -32,7 +32,6 @@ span
             v-btn(v-for='(page, index) in pages' :key='index' @click='goToLink(page.path)', v-if='!page.private || isAuthenticated', text)
               span(class="grey--text") {{page.title}}
           v-app-bar-nav-icon.hidden-md-and-up(v-if='mode !== `edit`' color='grey' @click='mobileNavOpen = !mobileNavOpen')
-
           //- v-menu(open-on-hover, offset-y, bottom, left, min-width='250', transition='slide-y-transition')
           //-   template(v-slot:activator='{ on }')
           //-     v-app-bar-nav-icon.btn-animate-app(v-on='on', :class='$vuetify.rtl ? `mx-0` : ``')
@@ -54,8 +53,7 @@ span
           //-       v-list-item-content
           //-         v-list-item-title.body-2.grey--text.text--ligten-2 {{$t('common:header.imagesFiles')}}
           //-         v-list-item-subtitle.overline.grey--text.text--lighten-2 Coming soon
-          //- v-toolbar-title(:class='{ "mx-3": $vuetify.breakpoint.mdAndUp, "mx-0": $vuetify.breakpoint.smAndDown }')
-          //-
+          //- v-toolbar-title(:class='{ "mx-3": $vuetify.breakpoint.mdAndUp, "mx-1": $vuetify.breakpoint.smAndDown }')
             span.subheading {{title}}
 
       //- v-flex(md4, v-if='$vuetify.breakpoint.mdAndUp')
@@ -137,24 +135,27 @@ span
               v-list(nav, :light='!$vuetify.theme.dark', :dark='$vuetify.theme.dark', :class='$vuetify.theme.dark ? `grey darken-4` : ``')
                 .overline.pa-4.grey--text {{$t('common:header.currentPage')}}
                 v-list-item.pl-4(@click='pageView', v-if='mode !== `view`')
-                  v-list-item-avatar(size='24'): v-icon(color='indigo') mdi-file-document-box-outline
+                  v-list-item-avatar(size='24', tile): v-icon(color='indigo') mdi-file-document-box-outline
                   v-list-item-title.body-2 {{$t('common:header.view')}}
                 v-list-item.pl-4(@click='pageEdit', v-if='mode !== `edit` && isAuthenticated')
-                  v-list-item-avatar(size='24'): v-icon(color='indigo') mdi-file-document-edit-outline
+                  v-list-item-avatar(size='24', tile): v-icon(color='indigo') mdi-file-document-edit-outline
                   v-list-item-title.body-2 {{$t('common:header.edit')}}
                 v-list-item.pl-4(@click='pageHistory', v-if='mode !== `history`')
-                  v-list-item-avatar(size='24'): v-icon(color='indigo') mdi-history
+                  v-list-item-avatar(size='24', tile): v-icon(color='indigo') mdi-history
                   v-list-item-content
                     v-list-item-title.body-2 {{$t('common:header.history')}}
                 v-list-item.pl-4(@click='pageSource', v-if='mode !== `source`')
-                  v-list-item-avatar(size='24'): v-icon(color='indigo') mdi-code-tags
+                  v-list-item-avatar(size='24', tile): v-icon(color='indigo') mdi-code-tags
                   v-list-item-title.body-2 {{$t('common:header.viewSource')}}
+                v-list-item.pl-4(@click='pageDuplicate', v-if='isAuthenticated')
+                  v-list-item-avatar(size='24', tile): v-icon(color='indigo') mdi-content-duplicate
+                  v-list-item-title.body-2 {{$t('common:header.duplicate')}}
                 v-list-item.pl-4(@click='pageMove', v-if='isAuthenticated')
-                  v-list-item-avatar(size='24'): v-icon(color='indigo') mdi-content-save-move-outline
+                  v-list-item-avatar(size='24', tile): v-icon(color='indigo') mdi-content-save-move-outline
                   v-list-item-content
                     v-list-item-title.body-2 {{$t('common:header.move')}}
                 v-list-item.pl-4(@click='pageDelete', v-if='isAuthenticated')
-                  v-list-item-avatar(size='24'): v-icon(color='red darken-2') mdi-trash-can-outline
+                  v-list-item-avatar(size='24', tile): v-icon(color='red darken-2') mdi-trash-can-outline
                   v-list-item-title.body-2 {{$t('common:header.delete')}}
             v-divider(vertical)
 
@@ -194,11 +195,10 @@ span
               //-   v-list-item-content
               //-     v-list-item-title {{$t('common:header.myWiki')}}
               //-     v-list-item-subtitle.overline Coming soon
-              //- v-list-item(href='/p', disabled)
-              //-   v-list-item-action: v-icon(color='blue') mdi-face-profile
-              //-   v-list-item-content
-              //-     v-list-item-title {{$t('common:header.profile')}}
-              //-     v-list-item-subtitle.overline Coming soon
+              v-list-item(href='/p')
+                v-list-item-action: v-icon(color='blue-grey') mdi-face-profile
+                v-list-item-content
+                  v-list-item-title(:class='$vuetify.theme.dark ? `blue-grey--text text--lighten-3` : `blue-grey--text`') {{$t('common:header.profile')}}
               v-list-item(href='/a', v-if='isAuthenticated && isAdmin')
                 v-list-item-action.btn-animate-rotate: v-icon(:color='$vuetify.theme.dark ? `blue-grey lighten-3` : `blue-grey`') mdi-cog
                 v-list-item-title(:class='$vuetify.theme.dark ? `blue-grey--text text--lighten-3` : `blue-grey--text`') {{$t('common:header.admin')}}
@@ -214,6 +214,7 @@ span
 
     page-selector(mode='create', v-model='newPageModal', :open-handler='pageNewCreate', :locale='locale')
     page-selector(mode='move', v-model='movePageModal', :open-handler='pageMoveRename', :path='path', :locale='locale')
+    page-selector(mode='create', v-model='duplicateOpts.modal', :open-handler='pageDuplicateHandle', :path='duplicateOpts.path', :locale='duplicateOpts.locale')
     page-delete(v-model='deletePageModal', v-if='path && path.length')
 
     //- .nav-header-dev(v-if='isDevMode')
@@ -270,6 +271,11 @@ export default {
       deletePageModal: false,
       locales: siteLangs,
       isDevMode: false,
+      duplicateOpts: {
+        locale: 'en',
+        path: 'new-page',
+        modal: false
+      },
       pages: [
         { title: 'Joining', path: '/join', icon: 'mdi-account-multiple-plus' },
         { title: 'Members', path: '/members', icon: 'mdi-account-group' },
@@ -345,6 +351,9 @@ export default {
     this.$root.$on('pageMove', () => {
       this.pageMove()
     })
+    this.$root.$on('pageDuplicate', () => {
+      this.pageDuplicate()
+    })
     this.$root.$on('pageDelete', () => {
       this.pageDelete()
     })
@@ -398,6 +407,17 @@ export default {
     },
     pageSource () {
       window.location.assign(`/s/${this.locale}/${this.path}`)
+    },
+    pageDuplicate () {
+      const pathParts = this.path.split('/')
+      this.duplicateOpts = {
+        locale: this.locale,
+        path: (pathParts.length > 1) ? _.initial(pathParts).join('/') + `/new-page` : `new-page`,
+        modal: true
+      }
+    },
+    pageDuplicateHandle ({ locale, path }) {
+      window.location.assign(`/e/${locale}/${path}?from=${this.$store.get('page/id')}`)
     },
     pageMove () {
       this.movePageModal = true

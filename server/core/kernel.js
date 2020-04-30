@@ -1,5 +1,5 @@
 const _ = require('lodash')
-const EventEmitter = require('events')
+const EventEmitter = require('eventemitter2').EventEmitter2
 
 /* global WIKI */
 
@@ -35,7 +35,10 @@ module.exports = {
       WIKI.scheduler = require('./scheduler').init()
       WIKI.servers = require('./servers')
       WIKI.sideloader = require('./sideloader').init()
-      WIKI.events = new EventEmitter()
+      WIKI.events = {
+        inbound: new EventEmitter(),
+        outbound: new EventEmitter()
+      }
     } catch (err) {
       WIKI.logger.error(err)
       process.exit(1)
@@ -75,5 +78,38 @@ module.exports = {
     await WIKI.models.searchEngines.initEngine()
     await WIKI.models.storage.initTargets()
     WIKI.scheduler.start()
+
+    await WIKI.models.subscribeToNotifications()
   },
+  /**
+   * Init Telemetry
+   */
+  async initTelemetry() {
+    require('./telemetry').init()
+
+    process.on('unhandledRejection', (err) => {
+      WIKI.logger.warn(err)
+      WIKI.telemetry.sendError(err)
+    })
+    process.on('uncaughtException', (err) => {
+      WIKI.logger.warn(err)
+      WIKI.telemetry.sendError(err)
+    })
+  },
+  /**
+   * Graceful shutdown
+   */
+  async shutdown () {
+    if (WIKI.models) {
+      await WIKI.models.unsubscribeToNotifications()
+      await WIKI.models.knex.client.pool.destroy()
+      await WIKI.models.knex.destroy()
+    }
+    if (WIKI.scheduler) {
+      WIKI.scheduler.stop()
+    }
+    if (WIKI.servers) {
+      await WIKI.servers.stopServers()
+    }
+  }
 }
