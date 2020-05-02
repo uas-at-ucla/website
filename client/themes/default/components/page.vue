@@ -238,7 +238,7 @@
         :right='$vuetify.rtl'
         :left='!$vuetify.rtl'
         small
-        :depressed='this.$vuetify.breakpoint.mdAndUp'
+        :depressed='this.$vuetify.breakpoint.mdAndUp && !isMainPage'
         @click='$vuetify.goTo(0, scrollOpts)'
         color='primary'
         dark
