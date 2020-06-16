@@ -6,7 +6,7 @@ const cors = require('cors')
 const express = require('express')
 const session = require('express-session')
 const KnexSessionStore = require('connect-session-knex')(session)
-// const favicon = require('serve-favicon')
+const favicon = require('serve-favicon')
 const path = require('path')
 const _ = require('lodash')
 

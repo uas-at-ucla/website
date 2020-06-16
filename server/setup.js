@@ -3,6 +3,7 @@ const { v4: uuid } = require('uuid')
 const bodyParser = require('body-parser')
 const compression = require('compression')
 const express = require('express')
+const favicon = require('serve-favicon')
 const http = require('http')
 const Promise = require('bluebird')
 const fs = require('fs-extra')
@@ -118,6 +119,10 @@ module.exports = () => {
         analyticsId: ''
       })
       _.set(WIKI.config, 'sessionSecret', (await crypto.randomBytesAsync(32)).toString('hex'))
+      // _.set(WIKI.config, 'telemetry', {
+      //   isEnabled: req.body.telemetry === true,
+      //   clientId: uuid()
+      // })
       _.set(WIKI.config, 'theming', {
         theme: 'default',
         darkMode: false,
@@ -179,6 +184,7 @@ module.exports = () => {
         'mail',
         'seo',
         'sessionSecret',
+        // 'telemetry',
         'theming',
         'uploads',
         'title'
@@ -336,9 +342,9 @@ module.exports = () => {
         redirectPort: WIKI.config.port
       }).end()
 
-      if (WIKI.config.telemetry.isEnabled) {
-        await WIKI.telemetry.sendInstanceEvent('INSTALL')
-      }
+      // if (WIKI.config.telemetry.isEnabled) {
+      //   await WIKI.telemetry.sendInstanceEvent('INSTALL')
+      // }
 
       WIKI.config.setup = false
 
@@ -350,6 +356,10 @@ module.exports = () => {
         }, 1000)
       })
     } catch (err) {
+      try {
+        await WIKI.models.knex('settings').truncate()
+      } catch (err) {}
+      // WIKI.telemetry.sendError(err)
       res.json({ ok: false, error: err.message })
     }
   })
@@ -371,6 +381,7 @@ module.exports = () => {
       error: WIKI.IS_DEBUG ? err : {}
     })
     WIKI.logger.error(err.message)
+    // WIKI.telemetry.sendError(err)
   })
 
   // ----------------------------------------
