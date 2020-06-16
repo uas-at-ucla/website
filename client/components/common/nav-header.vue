@@ -27,8 +27,8 @@ span
       v-flex()
         v-toolbar.nav-header-inner(id='left-toolbar' color='black', dark, flat, :class='$vuetify.rtl ? `pr-3` : `pl-3`')
           a(@click='goHome')
-            v-img(v-if="!((!isAuthenticated && $vuetify.breakpoint.smAndDown) || (isAuthenticated && $vuetify.breakpoint.mdAndDown))" src="/img/uas_logo.png", width="300px")
-            v-img(v-if="((!isAuthenticated && $vuetify.breakpoint.smAndDown) || (isAuthenticated && $vuetify.breakpoint.mdAndDown))" src="/img/uas_logo_compact.png", width="50px")
+            v-img(v-if="!((!isAuthenticated && $vuetify.breakpoint.smAndDown) || (isAuthenticated && $vuetify.breakpoint.mdAndDown))" src="/_assets/img/uas_logo.png", width="300px")
+            v-img(v-if="((!isAuthenticated && $vuetify.breakpoint.smAndDown) || (isAuthenticated && $vuetify.breakpoint.mdAndDown))" src="/_assets/img/uas_logo_compact.png", width="50px")
           v-toolbar-items.hidden-sm-and-down.page-btns(v-if='mode !== `edit`')
             v-btn(v-for='(page, index) in pages' :key='index' @click='goToLink(page.path)', v-if='!page.private || isAuthenticated', text)
               span(class="grey--text") {{page.title}}
