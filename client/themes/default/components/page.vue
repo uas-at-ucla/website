@@ -464,7 +464,7 @@ export default {
         this.$vuetify.goTo(window.location.hash, this.scrollOpts)
       }
 
-      this.$refs.container.querySelectorAll(`a[href^="#"].toc-anchor, a[href^="${window.location.href.replace(window.location.hash, '')}#"].toc-anchor`).forEach(el => {
+      this.$refs.container.querySelectorAll(`a[href^="#"]:not(.nav-link), a[href^="${window.location.href.replace(window.location.hash, '')}#"]:not(.nav-link)`).forEach(el => {
         el.onclick = ev => {
           ev.preventDefault()
           ev.stopPropagation()
