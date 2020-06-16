@@ -32,8 +32,8 @@ module.exports = () => {
   // Public Assets
   // ----------------------------------------
 
-  app.use(express.static(path.join(WIKI.ROOTPATH, 'client', 'static', 'favicon.ico')))
-  app.use(express.static(path.join(WIKI.ROOTPATH, 'assets')))
+  app.use(favicon(path.join(WIKI.ROOTPATH, 'assets', 'favicon.ico')))
+  app.use('/_assets', express.static(path.join(WIKI.ROOTPATH, 'assets')))
 
   // ----------------------------------------
   // View Engine Setup
@@ -103,6 +103,7 @@ module.exports = () => {
         host: '',
         port: 465,
         secure: true,
+        verifySSL: true,
         user: '',
         pass: '',
         useDKIM: false,
@@ -179,6 +180,7 @@ module.exports = () => {
         'seo',
         'sessionSecret',
         'theming',
+        'uploads',
         'title'
       ], false)
 

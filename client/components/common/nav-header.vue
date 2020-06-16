@@ -21,6 +21,7 @@ span
         @blur='searchBlur'
         @keyup.down='searchMove(`down`)'
         @keyup.up='searchMove(`up`)'
+        autocomplete='off'
       )
     v-layout(row)
       v-flex()
@@ -80,6 +81,7 @@ span
                 @blur='searchBlur'
                 @keyup.down='searchMove(`down`)'
                 @keyup.up='searchMove(`up`)'
+                autocomplete='off'
               )
             v-tooltip(bottom)
               template(v-slot:activator='{ on }')
