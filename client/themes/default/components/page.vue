@@ -542,7 +542,7 @@ export default {
 
     // -> Handle anchor links within the page contents
     this.$nextTick(() => {
-      this.$refs.container.querySelectorAll(`a[href^="#"]:not(.nav-link), a[href^="${window.location.href.replace(window.location.hash, '')}#"]:not(.nav-link)`).forEach(el => {
+      this.$refs.container.querySelectorAll(`a[href^="#"]:not(.nav-link):not(.carousel-control-next):not(.carousel-control-prev), a[href^="${window.location.href.replace(window.location.hash, '')}#"]:not(.nav-link):not(.carousel-control-next):not(.carousel-control-prev)`).forEach(el => {
         el.onclick = ev => {
           ev.preventDefault()
           ev.stopPropagation()
