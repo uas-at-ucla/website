@@ -116,7 +116,9 @@ module.exports = {
     WIKI.logger.info(`(STORAGE/DISK) Renaming file from ${asset.path} to ${asset.destinationPath}...`)
     await fs.move(path.join(this.config.path, asset.path), path.join(this.config.path, asset.destinationPath), { overwrite: true })
   },
-
+  async getLocalLocation (asset) {
+    return path.join(this.config.path, asset.path)
+  },
   /**
    * HANDLERS
    */
@@ -125,12 +127,15 @@ module.exports = {
 
     // -> Pages
     await pipeline(
-      WIKI.models.knex.column('path', 'localeCode', 'title', 'description', 'contentType', 'content', 'isPublished', 'updatedAt').select().from('pages').where({
+      WIKI.models.knex.column('id', 'path', 'localeCode', 'title', 'description', 'contentType', 'content', 'isPublished', 'updatedAt', 'createdAt', 'editorKey').select().from('pages').where({
         isPrivate: false
       }).stream(),
       new stream.Transform({
         objectMode: true,
         transform: async (page, enc, cb) => {
+          const pageObject = await WIKI.models.pages.query().findById(page.id)
+          page.tags = await pageObject.$relatedQuery('tags')
+          
           let fileName = `${page.path}.${pageHelper.getFileExtension(page.contentType)}`
           if (WIKI.config.lang.code !== page.localeCode) {
             fileName = `${page.localeCode}/${fileName}`

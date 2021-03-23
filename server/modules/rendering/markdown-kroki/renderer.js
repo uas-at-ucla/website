@@ -73,7 +73,7 @@ module.exports = {
             continue
           }
 
-          var closeMarkerMatched = true
+          let closeMarkerMatched = true
           for (i = 0; i < closeMarker.length; ++i) {
             if (closeMarker[i] !== state.src[start + i]) {
               closeMarkerMatched = false
@@ -120,7 +120,7 @@ module.exports = {
 
         token = state.push('kroki', 'img', 0)
         // alt is constructed from children. No point in populating it here.
-        token.attrs = [ [ 'src', `${server}/${diagramType}/svg/${result}` ], [ 'alt', '' ], ['class', 'uml-diagram'] ]
+        token.attrs = [ [ 'src', `${server}/${diagramType}/svg/${result}` ], [ 'alt', '' ], ['class', 'uml-diagram prefetch-candidate'] ]
         token.block = true
         token.children = altToken
         token.info = params

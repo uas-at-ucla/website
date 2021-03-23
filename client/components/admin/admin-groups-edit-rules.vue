@@ -1,7 +1,7 @@
 <template lang="pug">
   v-card(flat)
     v-card-text(v-if='group.id === 1')
-      v-alert.radius-7(
+      v-alert.radius-7.mb-0(
         :class='$vuetify.theme.dark ? "grey darken-4" : "orange lighten-5"'
         color='orange darken-2'
         outlined
@@ -222,6 +222,8 @@ export default {
         { text: 'Read / Use Assets', value: 'read:assets', icon: 'mdi-image-search-outline' },
         { text: 'Upload Assets', value: 'write:assets', icon: 'mdi-image-plus' },
         { text: 'Edit + Delete Assets', value: 'manage:assets', icon: 'mdi-image-size-select-large' },
+        { text: 'Edit Scripts', value: 'write:scripts', icon: 'mdi-language-javascript' },
+        { text: 'Edit Styles', value: 'write:styles', icon: 'mdi-language-css3' },
         { text: 'Read Comments', value: 'read:comments', icon: 'mdi-comment-search-outline' },
         { text: 'Create Comments', value: 'write:comments', icon: 'mdi-comment-plus-outline' },
         { text: 'Edit + Delete Comments', value: 'manage:comments', icon: 'mdi-comment-remove-outline' }

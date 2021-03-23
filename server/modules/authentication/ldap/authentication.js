@@ -18,17 +18,13 @@ module.exports = {
           bindCredentials: conf.bindCredentials,
           searchBase: conf.searchBase,
           searchFilter: conf.searchFilter,
-          tlsOptions: (conf.tlsEnabled) ? {
-            rejectUnauthorized: conf.verifyTLSCertificate,
-            ca: [
-              fs.readFileSync(conf.tlsCertPath)
-            ]
-          } : {}
+          tlsOptions: getTlsOptions(conf),
+          includeRaw: true
         },
         usernameField: 'email',
         passwordField: 'password',
-        passReqToCallback: false
-      }, async (profile, cb) => {
+        passReqToCallback: true
+      }, async (req, profile, cb) => {
         try {
           const userId = _.get(profile, conf.mappingUID, null)
           if (!userId) {
@@ -36,13 +32,13 @@ module.exports = {
           }
 
           const user = await WIKI.models.users.processProfile({
+            providerKey: req.params.strategy,
             profile: {
               id: userId,
-              email: _.get(profile, conf.mappingEmail, ''),
+              email: String(_.get(profile, conf.mappingEmail, '')).split(',')[0],
               displayName: _.get(profile, conf.mappingDisplayName, '???'),
-              picture: _.get(profile, conf.mappingPicture, '')
-            },
-            providerKey: 'ldap'
+              picture: _.get(profile, `_raw.${conf.mappingPicture}`, '')
+            }
           })
           cb(null, user)
         } catch (err) {
@@ -53,5 +49,27 @@ module.exports = {
         }
       }
       ))
+  }
+}
+
+function getTlsOptions(conf) {
+  if (!conf.tlsEnabled) {
+    return {}
+  }
+
+  if (!conf.tlsCertPath) {
+    return {
+      rejectUnauthorized: conf.verifyTLSCertificate,
+    }
+  }
+
+  const caList = []
+  if (conf.verifyTLSCertificate) {
+    caList.push(fs.readFileSync(conf.tlsCertPath))
+  }
+
+  return {
+    rejectUnauthorized: conf.verifyTLSCertificate,
+    ca: caList
   }
 }
