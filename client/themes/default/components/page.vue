@@ -528,7 +528,11 @@ export default {
 
     this.$store.set('page/mode', 'view')
 
-    window.addEventListener('isMainPage', this.setIsMainPage)
+    if (window.isMainPage) {
+      this.isMainPage = true
+    } else {
+      window.addEventListener('isMainPage', this.setIsMainPage)
+    }
   },
   destroyed() {
     window.removeEventListener('isMainPage', this.setIsMainPage)
