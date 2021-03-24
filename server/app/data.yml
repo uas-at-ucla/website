@@ -39,7 +39,7 @@ defaults:
     title: Wiki.js
     company: ''
     contentLicense: ''
-    logoUrl: https://static.requarks.io/logo/wikijs-butterfly.svg
+    logoUrl: https://uasatucla.org/_assets/img/uas_logo_compact.png
     mail:
       host: ''
       secure: true

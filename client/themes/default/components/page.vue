@@ -53,7 +53,7 @@
           v-col.page-col-content.is-page-header(:offset-xl='isMainPage ? 0 : 2', :offset-lg='isMainPage ? 0 : 3', style='margin-top: auto; margin-bottom: auto;', :class='$vuetify.rtl ? `pr-4` : `pl-4`')
             .headline.grey--text(:class='$vuetify.theme.dark ? `text--lighten-2` : `text--darken-3`') {{title}}
             .caption.grey--text.text--darken-1 {{description}}
-      v-divider
+      v-divider(v-if='path !== `home`')
       v-container.pl-5.pt-4(fluid, grid-list-xl)
         v-layout(row :justify-center='isMainPage')
           v-flex.page-col-sd(lg3, xl2, v-if='!isMainPage && $vuetify.breakpoint.lgAndUp')
@@ -617,14 +617,11 @@ export default {
       this.$root.$emit('pageDelete')
     },
     handleSideNavVisibility () {
-      console.log('hello')
       if (window.innerWidth === this.winWidth) { return }
-      console.log('its me')
       this.winWidth = window.innerWidth
       if (this.$vuetify.breakpoint.mdAndUp) {
         this.navShown = true
       } else {
-        console.log('adele')
         this.navShown = false
       }
     },
