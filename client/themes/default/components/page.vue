@@ -31,7 +31,7 @@
         v-icon mdi-menu
 
     v-main(ref='content', padding='0')
-      template(v-if='path !== `home`')
+      template(v-if='path !== `home` && path !== `en/private/test-home`')
         v-toolbar(:color='$vuetify.theme.dark ? `grey darken-4-d3` : `grey lighten-3`', flat, dense, v-if='$vuetify.breakpoint.smAndUp')
           //- v-btn.pl-0(v-if='$vuetify.breakpoint.xsOnly', flat, @click='toggleNavigation')
           //-   v-icon(color='grey darken-2', left) menu
@@ -48,12 +48,12 @@
             .caption.red--text {{$t('common:page.unpublished')}}
             status-indicator.ml-3(negative, pulse)
         v-divider
-      v-container.grey.pa-0(v-if='path !== `home`', fluid, :class='$vuetify.theme.dark ? `darken-4-l3` : `lighten-4`')
+      v-container.grey.pa-0(v-if='path !== `home` && path !== `en/private/test-home`', fluid, :class='$vuetify.theme.dark ? `darken-4-l3` : `lighten-4`')
         v-row(no-gutters, align-content='center', style='height: 90px;')
           v-col.page-col-content.is-page-header(:offset-xl='isMainPage ? 0 : 2', :offset-lg='isMainPage ? 0 : 3', style='margin-top: auto; margin-bottom: auto;', :class='$vuetify.rtl ? `pr-4` : `pl-4`')
             .headline.grey--text(:class='$vuetify.theme.dark ? `text--lighten-2` : `text--darken-3`') {{title}}
             .caption.grey--text.text--darken-1 {{description}}
-      v-divider(v-if='path !== `home`')
+      v-divider(v-if='path !== `home` && path !== `en/private/test-home`')
       v-container.pl-5.pt-4(fluid, grid-list-xl)
         v-layout(row :justify-center='isMainPage')
           v-flex.page-col-sd(lg3, xl2, v-if='!isMainPage && $vuetify.breakpoint.lgAndUp')
@@ -185,7 +185,7 @@
                   span {{$t('common:page.printFormat')}}
                 v-spacer
 
-          v-flex.page-col-content(:xs12='path !== `home`', :lg9='path !== `home`', :xl10='path !== `home`')
+          v-flex.page-col-content(:xs12='path !== `home` && path !== `en/private/test-home`', :lg9='path !== `home` && path !== `en/private/test-home`', :xl10='path !== `home` && path !== `en/private/test-home`')
             v-tooltip(:right='$vuetify.rtl', :left='!$vuetify.rtl', v-if='hasAnyPagePermissions')
               template(v-slot:activator='{ on: onEditActivator }')
                 v-speed-dial(
